@@ -12,7 +12,7 @@
         </ol>
       </nav>
     </div><!-- End Page Title -->
-    
+
     <section class="section dashboard">
         <div class="card top-selling overflow-auto">
             <div class="card-body pt-2">
@@ -92,12 +92,6 @@
                                 <th scope="col">Lectura Anterior</th>
                                 <th scope="col">Lectura Actual</th>
                                 <th scope="col">Consumo <br/><small>(M³)</small></th>
-                                <th scope="col">Consumo Agua<br/><small>$</small></th>
-                                <th scope="col">Subsidio<br/><small>$</small></th>
-                                <th scope="col">Mes<br/><small>$</small></th>
-                                <th scope="col">Multas<br/><small>$</small></th>
-                                <th scope="col">Saldo Anterior<br/><small>$</small></th>
-                                <th scope="col">Iva 19%<br/><small>$</small></th>
                                 <th scope="col">Total<br/><small>$</small></th>
                                 <th scope="col"></th>
                             </tr>
@@ -113,25 +107,19 @@
                                 <td>{{ $reading->period }}</td>
                                 <td class="text-end"><span class="text-warning fw-bold">{{ $reading->previous_reading }}</span></td>
                                 <td class="text-end">
-                                    <form method="POST" action="{{ route('orgs.readings.current_reading_update', $org->id) }}" 
+                                    <form method="POST" action="{{ route('orgs.readings.current_reading_update', $org->id) }}"
                                           class="current-reading-form" data-reading-id="{{ $reading->id }}">
                                         @csrf
                                         <input type="hidden" name="reading_id" value="{{ $reading->id }}">
-                                        <input type="number" 
-                                               name="current_reading" 
-                                               class="form-control form-control-sm current-reading-input" 
+                                        <input type="number"
+                                               name="current_reading"
+                                               class="form-control form-control-sm current-reading-input"
                                                value="{{ $reading->current_reading }}"
                                                style="width: 80px; display: inline-block; text-align: right;"
                                                data-row-index="{{ $loop->index }}">
                                     </form>
                                 </td>
                                 <td class="text-end"><span class="text-primary fw-bold">{{ $reading->cm3 }}</span></td>
-                                <td class="text-end"><span class="text-danger fw-bold">+ @money($reading->vc_water)</span></td>
-                                <td class="text-end"><span class="text-success fw-bold">- @money($reading->v_subs)</span></td>
-                                <td class="text-end"><span class="text-danger fw-bold">+ @money($reading->total_mounth)</span></td>
-                                <td class="text-end"><span class="text-danger fw-bold">+ @money($reading->fines)</span></td>
-                                <td class="text-end"><span class="text-danger fw-bold">+ @money($reading->s_previous)</span></td>
-                                <td class="text-end"><span class="text-danger fw-bold">+ @money($reading->tax)</span></td>
                                 <td class="text-end"><span class="text-danger fw-bold">= @money($reading->total)</span></td>
                                 <td class="text-end">
                                     <div class="d-flex justify-content-end">
@@ -145,16 +133,16 @@
                                                 <i class="ri-file-2-line"></i> DTE
                                             </a>
                                         @endif
-                                        
+
                                         <!-- Botón Editar -->
-                                        <button class="btn btn-sm btn-success edit-btn" 
-                                                data-bs-id="{{ $reading->id }}" 
+                                        <button class="btn btn-sm btn-success edit-btn"
+                                                data-bs-id="{{ $reading->id }}"
                                                 data-bs-current="{{ $reading->current_reading }}"
                                                 data-bs-previous="{{ $reading->previous_reading }}"
                                                 data-bs-fines="{{ $reading->fines }}"
-                                                data-bs-toggle="modal" 
-                                                data-bs-target="#editReadingModal" 
-                                                data-bs-placement="top" 
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#editReadingModal"
+                                                data-bs-placement="top"
                                                 title="Editar">
                                             <i class="ri-edit-box-line"></i> Editar
                                         </button>
@@ -174,20 +162,20 @@
                                             <form method="POST" action="{{ route('orgs.readings.update', $org->id) }}" id="editReadingForm">
                                                 @csrf
                                                 @method('POST')
-                                            
+
                                                 <!-- Input para el ID de la lectura -->
                                                 <input type="hidden" id="reading_id" name="reading_id">
-                            
+
                                                 <div class="mb-3">
                                                     <label for="previous_reading" class="form-label">Lectura Anterior</label>
                                                     <input type="number" class="form-control" id="previous_reading" name="previous_reading" readonly>
                                                 </div>
-                                                
+
                                                 <div class="mb-3">
                                                     <label for="current_reading" class="form-label">Lectura Actual</label>
                                                     <input type="number" class="form-control" id="current_reading" name="current_reading" required>
                                                 </div>
-                            
+
                                                 <!-- Casillas de verificación -->
                                                 <div class="mb-3">
                                                     <div class="form-check mb-2">
@@ -195,8 +183,8 @@
                                                         <label class="form-check-label" for="cargo_vencido">
                                                             Cargo Vencido (@money($org->interest_due))
                                                         </label>
-                                                    </div>                                                
-                                                
+                                                    </div>
+
                                                     <div class="form-check mb-2">
                                                         <input class="form-check-input" type="checkbox" id="cargo_mora" name="cargo_mora">
                                                         <label class="form-check-label" for="cargo_mora">
@@ -211,13 +199,13 @@
                                                         </label>
                                                     </div>
                                                 </div>
-                            
+
                                                 <!-- Multa -->
                                                 <div class="mb-3">
                                                     <label for="other" class="form-label">Otros Cargos</label>
                                                     <input type="number" class="form-control" id="other" name="other" value="0">
                                                 </div>
-                            
+
                                                 <div class="mb-3">
                                                     <button type="submit" class="btn btn-success">Guardar Cambios</button>
                                                 </div>
@@ -226,7 +214,7 @@
                                     </div>
                                 </div>
                             </div>
-                            
+
                         </tbody>
                     </table>
                 </div>
@@ -234,7 +222,7 @@
             <div class="card-footer">{!! $readings->render('pagination::bootstrap-4') !!}</div>
         </div>
     </section>
-    
+
 @endsection
 
 
@@ -242,26 +230,26 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const currentReadingInputs = document.querySelectorAll('.current-reading-input');
-    
-  
+
+
     currentReadingInputs.forEach(input => {
-        
+
         input.addEventListener('focus', function() {
             this.dataset.originalValue = this.value;
         });
-        
-        
+
+
         input.addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
                 e.preventDefault();
-                
+
                 const form = this.closest('form');
-                
+
                 if (this.value !== this.dataset.originalValue) {
                     const xhr = new XMLHttpRequest();
                     xhr.open('POST', form.action, true);
                     xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
-                    
+
                     // Manejar la respuesta
                     xhr.onload = function() {
                         if (xhr.status === 200) {
@@ -269,16 +257,16 @@ document.addEventListener('DOMContentLoaded', function() {
                             // Puede mostrar un mensaje breve de éxito si lo desea
                         }
                     };
-                    
+
                     // Enviar el formulario
                     const formData = new FormData(form);
                     xhr.send(formData);
                 }
-                
+
                 // Obtener el índice actual y buscar el siguiente input
                 const currentIndex = parseInt(this.dataset.rowIndex);
                 const nextIndex = currentIndex + 1;
-                
+
                 // Buscar el siguiente input si existe
                 const nextInput = document.querySelector(`.current-reading-input[data-row-index="${nextIndex}"]`);
                 if (nextInput) {
@@ -289,7 +277,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
         });
-        
+
         // Restaurar valor original al perder el foco sin cambios
         input.addEventListener('blur', function() {
             if (this.value === '') {
@@ -301,31 +289,31 @@ document.addEventListener('DOMContentLoaded', function() {
 document.addEventListener('DOMContentLoaded', function() {
     // Event listener para cuando el modal se muestre
     $('#editReadingModal').on('show.bs.modal', function (event) {
-        
+
         // Obtener el botón que ha activado el modal
         var button = $(event.relatedTarget);
-        
+
         // Extraer los datos del botón
         var readingId = button.data('bs-id');
         var currentReading = button.data('bs-current');
         var previousReading = button.data('bs-previous');
         var fines = button.data('bs-fines') || 0;
-        
+
         // Guardar los valores en localStorage para usar al actualizar
         localStorage.setItem('readingId', readingId);
         localStorage.setItem('currentReading', currentReading);
         localStorage.setItem('previousReading', previousReading);
         localStorage.setItem('fines', fines);
-        
+
         // Referenciar el modal
         var modal = $(this);
-        
+
         // Asignar los valores a los campos del modal
         modal.find('#reading_id').val(readingId);
         modal.find('#current_reading').val(currentReading);
         modal.find('#previous_reading').val(previousReading);
         modal.find('#fines').val(fines);
-        
+
         // Casillas de verificación para cargos
         modal.find('#cargo_mora').prop('checked', false);
         modal.find('#cargo_vencido').prop('checked', false);
@@ -360,7 +348,7 @@ document.addEventListener('DOMContentLoaded', function() {
     $('#editReadingForm').on('submit', function() {
         // Los valores ya están en los campos del formulario gracias a los listeners anteriores
         // No necesitamos hacer nada especial aquí, los valores se enviarán correctamente
-        
+
         // Limpiar el almacenamiento local
         localStorage.removeItem('readingId');
         localStorage.removeItem('currentReading');
