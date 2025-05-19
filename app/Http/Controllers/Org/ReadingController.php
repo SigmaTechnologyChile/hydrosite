@@ -21,7 +21,7 @@ class ReadingController extends Controller
     public function __construct()
     {
         $this->middleware('auth');
-        $id        = \Route::current()->Parameter('id');
+        $id = \Route::current()->Parameter('id');
         $this->org = Org::find($id);
     }
 
@@ -34,12 +34,12 @@ class ReadingController extends Controller
     {
         $org = $this->org;
 
-        $sector    = $request->input('sector');
-        $search    = $request->input('search');
+        $sector = $request->input('sector');
+        $search = $request->input('search');
         $from_date = $request->input('from_date');
-        $to_date   = $request->input('to_date');
+        $to_date = $request->input('to_date');
 
-        if (! $org) {
+        if (!$org) {
             return redirect()->route('orgs.index')->with('error', 'Organización no encontrada.');
         }
 
@@ -72,14 +72,14 @@ class ReadingController extends Controller
     {
         $org = $this->org;
 
-        if (! $org) {
+        if (!$org) {
             return redirect()->route('orgs.index')->with('error', 'Organización no encontrada.');
         }
 
         $start_date = $request->input('start_date');
-        $end_date   = $request->input('end_date');
-        $sector     = $request->input('sector');
-        $search     = $request->input('search');
+        $end_date = $request->input('end_date');
+        $sector = $request->input('sector');
+        $search = $request->input('search');
 
         if ($start_date) {
             $start_date = \Carbon\Carbon::createFromFormat('Y-m-d', $start_date)->format('Y-m');
@@ -90,7 +90,7 @@ class ReadingController extends Controller
 
         $readings = Reading::join('services', 'readings.service_id', 'services.id')
             ->join('members', 'services.member_id', 'members.id')
-        //->leftjoin('locations','services.locality_id','locations.id')
+            //->leftjoin('locations','services.locality_id','locations.id')
             ->where('readings.org_id', $org_id)
             ->when($start_date && $end_date, function ($q) use ($start_date, $end_date) {
                 $q->where('readings.period', '>=', $start_date)
@@ -114,200 +114,139 @@ class ReadingController extends Controller
     public function current_reading_update($id, Request $request)
     {
         $request->validate([
+            'reading_id' => 'required|numeric',
             'current_reading' => 'required|numeric|min:0',
         ]);
 
         try {
-            $org        = $this->org;
-            $reading_id = $request->reading_id;
+            $org = $this->org;
+            $reading = Reading::findOrFail($request->reading_id);
 
-            // Buscar la lectura correspondiente
-            if ($reading = Reading::findOrFail($reading_id)) {
-                // Actualizar la lectura actual
-                $reading->current_reading = $request->current_reading;
+            $this->updateReading($org, $reading, $request->only(['current_reading']));
 
-                // Calcular la multa basada en los cargos seleccionados
-                /*
-                if ($request->has('cargo_mora')) {
-                    $reading->interest_late = $org->interest_late;
-                }
-                if ($request->has('cargo_vencido')) {
-                    $reading->interest_due = $org->interest_due;
-                }
-                if ($request->has('cargo_corte_reposicion')) {
-                    $reading->replacement_cut = $org->replacement_cut;
-                }
-
-                // Si no se seleccionó ninguno de los cargos, pero se proporciona un valor de multa manual
-                if ($request->has('other')) {
-                    $reading->other = $request->other;
-                }*/
-
-                // Guardar la lectura actualizada
-                $reading->save();
-
-                return redirect()->route('orgs.readings.index', $id)->with('success', 'Actualización de lectura correcta');
-            } else {
-                return redirect()->route('orgs.readings.index', $id)->with('warning', 'Lectura no actualizada');
-            }
+            return redirect()->route('orgs.readings.index', $id)->with('success', 'Lectura actualizada correctamente');
         } catch (\Exception $e) {
-            // En caso de error, mostrar un mensaje de error
-            return redirect()->route('orgs.readings.index', $id)->with('danger', 'Error al actualizar la lectura: ' . $e->getMessage());
+            return redirect()->route('orgs.readings.index', $id)->with('danger', 'Error al actualizar lectura: ' . $e->getMessage());
         }
     }
 
     public function update($id, Request $request)
     {
         $request->validate([
-            'reading_id'      => 'required|numeric',
+            'reading_id' => 'required|numeric',
             'current_reading' => 'required|numeric|min:0',
-            'fines'           => 'nullable|numeric|min:0',
+            'fines' => 'nullable|numeric|min:0',
         ]);
 
         try {
-            $org        = $this->org;
-            $reading_id = $request->reading_id;
+            $org = $this->org;
+            $reading = Reading::findOrFail($request->reading_id);
 
-            // Buscar la lectura correspondiente
-            if ($reading = Reading::findOrFail($reading_id)) {
-                // Actualizar la lectura actual
-                $reading->previous_reading = $request->previous_reading;
-                $reading->current_reading  = $request->current_reading;
-                $reading->cm3              = max(0, $reading->current_reading - $reading->previous_reading);
-                $service                   = Service::findOrFail($reading->service_id);
-                // Calcular la multa basada en los cargos seleccionados
+            $this->updateReading($org, $reading, $request->all());
 
-                if ($request->has('cargo_mora')) {
-                    $reading->fines = $org->interest_late;
-                }
-                if ($request->has('cargo_vencido')) {
-                    $reading->fines = $org->interest_due;
-                }
-                if ($request->has('cargo_corte_reposicion')) {
-                    $reading->fines = $org->replacement_cut;
-                }
-
-                // Si no se seleccionó ninguno de los cargos, pero se proporciona un valor de multa manual
-                if ($request->has('other')) {
-                    $reading->other = $request->other;
-                }
-
-                // calcular total
-                $cargo_fijo           = 3000;
-                $subsidio             = $service->meter_plan; // 0 o 1
-                $porcentaje_subsidio  = $service->percentage / 100;
-                $consumo_agua_potable = 0;
-                $subsidioDescuento    = 0;
-                $cm3                  = $reading->cm3;
-
-                // Definimos los tramos
-                $tramoV1 = 500;
-                $tramoV2 = 700;
-                $tramoV3 = 1300;
-                $tramos  = [
-                    ['hasta' => 15, 'precio' => $tramoV1],
-                    ['hasta' => 30, 'precio' => $tramoV2],
-                    ['hasta' => PHP_INT_MAX, 'precio' => $tramoV3],
-                ];
-
-                $anterior = 0;
-                $restante = $cm3;
-
-                for ($i = 0; $i < count($tramos) && $restante > 0; $i++) {
-                    $limite = $tramos[$i]['hasta'];
-                    $precio = $tramos[$i]['precio'];
-
-                    $cantidad = min($restante, $limite - $anterior);
-
-                    // Log para depuración
-                    \Log::info("Service meter_plan: " . $subsidio);
-                    \Log::info("Service percentage: " . $service->percentage);
-                    \Log::info("print reading? " . $reading);
-                    \Log::info("trae subsidio? " . $subsidio);
-
-                    if ($i === 0) {
-                        if ($subsidio != 0) {
-                            // $precioConSubsidio = $precio * (1 - $porcentaje_subsidio);
-                            // $consumo_agua_potable += $cantidad * $precioConSubsidio;
-                            // $subsidioDescuento = $cantidad * ($precio - $precioConSubsidio);
-
-                            // \Log::info("precio con subsidio" . $precioConSubsidio);
-                                // Aplicar subsidio solo hasta los primeros 13 cm³
-                                $cantidadSubvencionada = min(13, $cantidad);
-                                $cantidadNormal        = $cantidad - $cantidadSubvencionada;
-
-                                $precioConSubsidio = $precio * (1 - $porcentaje_subsidio);
-
-                                $consumo_agua_potable += $cantidadSubvencionada * $precioConSubsidio;
-                                $consumo_agua_potable += $cantidadNormal * $precio;
-
-                                $subsidioDescuento = $cantidadSubvencionada * ($precio - $precioConSubsidio);
-
-                        } else {
-                            $consumo_agua_potable += $cantidad * $precio;
-                        }
-                    } else {
-                        // Tramos sin subsidio
-                        $consumo_agua_potable += $cantidad * $precio;
-                    }
-
-                    $restante -= $cantidad;
-                    $anterior = $limite;
-                }
-                \Log::info("precio subsidio que se descontara " . $subsidioDescuento);
-                \Log::info("precio sin subsidio" . $consumo_agua_potable);
-
-                // Asignamos resultados
-                $reading->vc_water = $consumo_agua_potable;
-                $reading->v_subs   = $subsidioDescuento;
-
-                $subtotal_consumo      = $consumo_agua_potable + $cargo_fijo;
-                $reading->total_mounth = $subtotal_consumo;
-                $reading->total        = $subtotal_consumo;
-
-
-
-                // Log para depuración
-                \Log::info("Subtotal de consumo (sin IVA): " . $subtotal_consumo);
-
-                // IVA (si aplica)
-                $iva           = 0;
-                $total_con_iva = $subtotal_consumo;
-
-                // $routeName = \Route::currentRouteName();
-                // if ($routeName === 'orgs.readings.boleta') {
-                //     $docType = 'boleta';
-                // } elseif ($routeName === 'orgs.readings.factura') {
-                //     $docType = 'factura';
-                //     // Calcular IVA solo si es factura (19%)
-                //     $iva = $subtotal_consumo * 0.19; // IVA sobre el subtotal
-                //     $total_con_iva = $subtotal_consumo + $iva;
-                // } else {
-                //     $docType = 'boleta';
-                // }
-
-                // Guardar la lectura actualizada
-                $reading->save();
-
-                return redirect()->route('orgs.readings.index', $id)->with('success', 'Actualización de lectura correcta');
-            } else {
-                return redirect()->route('orgs.readings.index', $id)->with('warning', 'Lectura no actualizada');
-            }
+            return redirect()->route('orgs.readings.index', $id)->with('success', 'Actualización de lectura correcta');
         } catch (\Exception $e) {
-            // En caso de error, mostrar un mensaje de error
             return redirect()->route('orgs.readings.index', $id)->with('danger', 'Error al actualizar la lectura: ' . $e->getMessage());
         }
     }
+
+    private function updateReading($org, $reading, $data)
+    {
+        $reading->previous_reading = $data['previous_reading'] ?? $reading->previous_reading;
+        $reading->current_reading = $data['current_reading'];
+
+        $reading->cm3 = max(0, $reading->current_reading - $reading->previous_reading);
+
+        $service = Service::findOrFail($reading->service_id);
+        $cargo_fijo = 3000;
+        $subsidio = $service->meter_plan; // 0 o 1
+        $porcentaje_subsidio = $service->percentage / 100;
+        $consumo_agua_potable = 0;
+        $subsidioDescuento = 0;
+        $cm3 = $reading->cm3;
+
+        $tramoV1 = 500;
+        $tramoV2 = 700;
+        $tramoV3 = 1300;
+        $tramos = [
+            ['hasta' => 15, 'precio' => $tramoV1],
+            ['hasta' => 30, 'precio' => $tramoV2],
+            ['hasta' => PHP_INT_MAX, 'precio' => $tramoV3],
+        ];
+
+        $anterior = 0;
+        $restante = $cm3;
+
+        for ($i = 0; $i < count($tramos) && $restante > 0; $i++) {
+            $limite = $tramos[$i]['hasta'];
+            $precio = $tramos[$i]['precio'];
+
+            $cantidad = min($restante, $limite - $anterior);
+
+            if ($i === 0 && $subsidio != 0) {
+                $cantidadSubvencionada = min(13, $cantidad);
+                $cantidadNormal = $cantidad - $cantidadSubvencionada;
+                $precioConSubsidio = $precio * (1 - $porcentaje_subsidio);// esto es el 0.4 o 0.6? es lo que se descuenta o el total, deverisa ser el descuento, osea el 0.4 el que se muestra
+                $consumo_agua_potable += $cantidadSubvencionada * $precioConSubsidio;
+                $consumo_agua_potable += $cantidadNormal * $precio;
+                $subsidioDescuento = $cantidadSubvencionada * ($precio - $precioConSubsidio);
+            } else {
+                $consumo_agua_potable += $cantidad * $precio;
+            }
+
+            $restante -= $cantidad;
+            $anterior = $limite;
+        }
+
+        $reading->vc_water = $consumo_agua_potable;
+        $reading->v_subs = $subsidioDescuento;
+
+        $map = [
+            'cargo_mora' => 'interest_late',
+            'cargo_vencido' => 'interest_due',
+            'cargo_corte_reposicion' => 'replacement_cut',
+        ];
+
+        $maxFine = 0;
+
+        foreach ($map as $key => $orgProperty) {
+            if (isset($data[$key])) {
+                $value = $org->$orgProperty;
+                if ($value > $maxFine) {
+                    $maxFine = $value;
+                }
+            }
+        }
+
+        $reading->fines = $maxFine;
+
+        $reading->other = $data['other'] ?? $reading->other;
+
+        $subtotal_consumo_mes = $consumo_agua_potable + $cargo_fijo;
+        $reading->total_mounth = $subtotal_consumo_mes;
+        $subTotal = $subtotal_consumo_mes + $reading->fines + $reading->other + $reading->s_previous;
+        $reading->sub_total = $subTotal;
+
+        if ($reading->invoice_type && $reading->invoice_type != "boleta") {
+            $iva = $subTotal * 0.19;
+            $reading->total = $subTotal + $iva;
+        } else {
+            $reading->total = $subTotal;
+        }
+
+        $reading->save();
+    }
+
 
     public function dte($id, $readingId)
     {
         \Log::info('Recibiendo solicitud para DTE con ID org: ' . $id . ' y readingId: ' . $readingId);
 
-        $org              = Org::findOrFail($id);
-        $reading          = Reading::findOrFail($readingId);
-        $reading->member  = Member::findOrFail($reading->member_id);
+        $org = Org::findOrFail($id);
+        $reading = Reading::findOrFail($readingId);
+        $reading->member = Member::findOrFail($reading->member_id);
         $reading->service = Service::findOrFail($reading->service_id);
-        $sections         = Section::where('org_id', $id)->OrderBy('from_to', 'ASC')->get();
+        $sections = Section::where('org_id', $id)->OrderBy('from_to', 'ASC')->get();
 
         if ($sections->isEmpty()) {
             \Log::error("No se encontraron secciones para la organización con ID: {$id}");
@@ -322,26 +261,29 @@ class ReadingController extends Controller
         $consumo_restante = $consumo;
 
         foreach ($sections as $section) {
-            $v = $section->until_to - $section->from_to;
+            $tramo_desde = $section->from_to;
+            $tramo_hasta = $section->until_to;
+            $v = $section->until_to - $section->from_to + 1;
 
+            $m3_en_este_tramo = min($v, $consumo);
             if ($consumo >= $v) {
                 $section->section = $section->from_to . " Hasta " . $section->until_to;
-                $section->m3      = $v;
-                $section->precio  = $section->cost;
-                $section->total   = $v * $section->cost;
-                $consumo          = $consumo - $v;
+                $section->m3 = $m3_en_este_tramo;//variable para el boleta.blade
+                $section->precio = $section->cost;
+                $section->total = $consumo * $section->cost;
+                $consumo = $reading->cm3 - $m3_en_este_tramo;
             } else {
                 $section->section = $section->from_to . " Hasta " . $section->until_to;
-                $section->m3      = $consumo;
-                $section->precio  = $section->cost;
-                $section->total   = $consumo * $section->cost;
-                $consumo          = 0;
+                $section->m3 = $m3_en_este_tramo;//variable para el boleta.blade
+                $section->precio = $section->cost;
+                $section->total = $consumo * $section->cost;
+                $consumo = 0;
             }
         }
 
-                                                     // Valores fijos
+        // Valores fijos
         $cargo_fijo = 3000;                          // Cargo fijo
-        $subsidio   = $reading->service->meter_plan; // Subsidio, si existe
+        $subsidio = $reading->service->meter_plan; // Subsidio, si existe
 
         // Aquí calculamos el subtotal de consumo (con tramos)
         // $consumo_agua_potable = $detalle_sections ? array_sum(array_column($detalle_sections, 'total')) : 0;
@@ -364,7 +306,7 @@ class ReadingController extends Controller
         \Log::info("Subtotal de consumo (sin IVA): " . $subtotal_consumo);
 
         // Definir el IVA solo si el tipo de documento es factura
-        $iva           = 0;
+        $iva = 0;
         $total_con_iva = $subtotal_consumo; // Inicializamos con el subtotal sin IVA
 
         $routeName = \Route::currentRouteName();
@@ -372,8 +314,8 @@ class ReadingController extends Controller
             $docType = 'boleta';
         } elseif ($routeName === 'orgs.readings.factura') {
             $docType = 'factura';
-                                                       // Calcular IVA solo si es factura (19%)
-            $iva           = $subtotal_consumo * 0.19; // IVA sobre el subtotal
+            // Calcular IVA solo si es factura (19%)
+            $iva = $subtotal_consumo * 0.19; // IVA sobre el subtotal
             $total_con_iva = $subtotal_consumo + $iva;
         } else {
             $docType = 'boleta';

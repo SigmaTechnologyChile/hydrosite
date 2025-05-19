@@ -19,7 +19,7 @@
                     </div>
                 </div>
             </div>
-            
+
             <!-- RUT -->
             <div class="col-md-4">
                 <div class="border border-danger p-2 text-center">
@@ -104,7 +104,7 @@
                     </tr>
                 </table>
             </div>
-            
+
             <div class="col-md-6">
                 <div class="bg-primary text-white p-1 text-center fw-bold">
                     Su detalle de consumo en Pesos ($)
@@ -119,9 +119,9 @@
                         <td class="text-end">@money($reading->vc_water)</td>
                     </tr>
                     <tr>
-                        <td>(+) Subsidio 50% Tope 13 M3</td>
+                        <td>(-) Subsidio 50% Tope 13 M3</td>
                         <td class="text-end">
-                            @money(isset($reading->subsidy) && is_numeric($reading->subsidy) ? $reading->subsidy : 0, 'CLP')
+                            @money(isset($reading->v_subs) && is_numeric($reading->v_subs) ? $reading->v_subs : 0, 'CLP')
                         </td>
                     </tr>
                     <tr>
@@ -139,12 +139,12 @@
                         <td class="text-end">
                             @money($reading->fines)
                         </td>
-                    </tr>                    
-                    
+                    </tr>
+
                 </table>
             </div>
         </div>
-        
+
         <div class="row mb-3">
             <div class="col-md-8">
                 <table class="table table-sm table-bordered mb-0 bg-light">
@@ -165,7 +165,7 @@
                                 <td class="text-end">@money($section->total)</td>
                             </tr>
                         @endforeach
-        
+
                         <tr>
                             <td class="text-end">Facturado</td>
                             <td class="text-end">{{ $reading->cm3 }}</td>
@@ -176,7 +176,7 @@
                 </table>
             </div>
         </div>
-        
+
         <div class="row justify-content-end">
             <div class="col-md-6">
                 <table class="table table-sm table-bordered">
@@ -202,7 +202,7 @@
             </div>
         </div>
 
-        
+
 
         <!-- Información de pago -->
         <div class="row mt-2">
@@ -231,9 +231,9 @@
 </div>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    
+
     const ctx = document.getElementById('consumption-chart');
-    
+
 });
 </script>
 

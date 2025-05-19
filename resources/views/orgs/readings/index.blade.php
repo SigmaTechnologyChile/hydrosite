@@ -116,6 +116,7 @@
                                                class="form-control form-control-sm current-reading-input"
                                                value="{{ $reading->current_reading }}"
                                                style="width: 80px; display: inline-block; text-align: right;"
+                                               onkeydown="if(event.key==='Enter'){ this.form.submit(); }"
                                                data-row-index="{{ $loop->index }}">
                                     </form>
                                 </td>
@@ -334,7 +335,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         if ($('#cargo_vencido').is(':checked')) {
-            totalFines += 800;
+            totalFines += 1600;
         }
 
         if ($('#cargo_corte_reposicion').is(':checked')) {
