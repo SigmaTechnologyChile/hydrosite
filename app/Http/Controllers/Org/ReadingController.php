@@ -164,6 +164,7 @@ class ReadingController extends Controller
         $consumo_agua_potable = 0;
         $subsidioDescuento = 0;
         $cm3 = $reading->cm3;
+        $consumoNormal = 0;
 
         $tramoV1 = 500;
         $tramoV2 = 700;
@@ -189,17 +190,20 @@ class ReadingController extends Controller
                 $precioConSubsidio = $precio * (1 - $porcentaje_subsidio);// esto es el 0.4 o 0.6? es lo que se descuenta o el total, deverisa ser el descuento, osea el 0.4 el que se muestra
                 $consumo_agua_potable += $cantidadSubvencionada * $precioConSubsidio;
                 $consumo_agua_potable += $cantidadNormal * $precio;
+                $consumoNormal +=$cantidad * $precio;
                 $subsidioDescuento = $cantidadSubvencionada * ($precio - $precioConSubsidio);
             } else {
                 $consumo_agua_potable += $cantidad * $precio;
+                 $consumoNormal +=$cantidad * $precio;
             }
 
             $restante -= $cantidad;
             $anterior = $limite;
         }
 
-        $reading->vc_water = $consumo_agua_potable;
+        $reading->vc_water = $consumoNormal;
         $reading->v_subs = $subsidioDescuento;
+
 
         $map = [
             'cargo_mora' => 'interest_late',
@@ -219,7 +223,6 @@ class ReadingController extends Controller
         }
 
         $reading->fines = $maxFine;
-
         $reading->other = $data['other'] ?? $reading->other;
 
         $subtotal_consumo_mes = $consumo_agua_potable + $cargo_fijo;
@@ -270,13 +273,13 @@ class ReadingController extends Controller
                 $section->section = $section->from_to . " Hasta " . $section->until_to;
                 $section->m3 = $m3_en_este_tramo;//variable para el boleta.blade
                 $section->precio = $section->cost;
-                $section->total = $consumo * $section->cost;
+               $section->total = $m3_en_este_tramo * $section->cost;
                 $consumo = $reading->cm3 - $m3_en_este_tramo;
             } else {
                 $section->section = $section->from_to . " Hasta " . $section->until_to;
                 $section->m3 = $m3_en_este_tramo;//variable para el boleta.blade
                 $section->precio = $section->cost;
-                $section->total = $consumo * $section->cost;
+               $section->total = $m3_en_este_tramo * $section->cost;
                 $consumo = 0;
             }
         }
