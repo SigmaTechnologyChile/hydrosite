@@ -176,37 +176,24 @@
                                                     <label for="current_reading" class="form-label">Lectura Actual</label>
                                                     <input type="number" class="form-control" id="current_reading" name="current_reading" required>
                                                 </div>
-
-                                                <!-- Casillas de verificación -->
                                                 <div class="mb-3">
                                                     <div class="form-check mb-2">
-                                                        <input class="form-check-input" type="checkbox" id="cargo_vencido" name="cargo_vencido">
-                                                        <label class="form-check-label" for="cargo_vencido">
-                                                            Cargo Vencido (@money($org->interest_due))
-                                                        </label>
-                                                    </div>
-
-                                                    <div class="form-check mb-2">
-                                                        <input class="form-check-input" type="checkbox" id="cargo_mora" name="cargo_mora">
-                                                        <label class="form-check-label" for="cargo_mora">
-                                                            Cargo Mora (@money($org->interest_late))
-                                                        </label>
-                                                    </div>
-
-                                                    <div class="form-check mb-2">
-                                                        <input class="form-check-input" type="checkbox" id="cargo_corte_reposicion" name="cargo_corte_reposicion">
+                                                        <input
+                                                            class="form-check-input"
+                                                            type="checkbox"
+                                                            id="cargo_corte_reposicion"
+                                                            name="cargo_corte_reposicion"
+                                                            @if (isset($reading->fines) && intval($reading->fines) >= 10000) checked="checked" @endif>
                                                         <label class="form-check-label" for="cargo_corte_reposicion">
-                                                            Cargo Corte Reposición (@money($org->replacement_cut))
+                                                            Cargo Corte Reposición
                                                         </label>
                                                     </div>
-                                                </div>
 
-                                                <!-- Multa -->
+                                                </div>
                                                 <div class="mb-3">
                                                     <label for="other" class="form-label">Otros Cargos</label>
                                                     <input type="number" class="form-control" id="other" name="other" value="0">
                                                 </div>
-
                                                 <div class="mb-3">
                                                     <button type="submit" class="btn btn-success">Guardar Cambios</button>
                                                 </div>
@@ -215,7 +202,6 @@
                                     </div>
                                 </div>
                             </div>
-
                         </tbody>
                     </table>
                 </div>
@@ -315,35 +301,11 @@ document.addEventListener('DOMContentLoaded', function() {
         modal.find('#previous_reading').val(previousReading);
         modal.find('#fines').val(fines);
 
-        // Casillas de verificación para cargos
-        modal.find('#cargo_mora').prop('checked', false);
-        modal.find('#cargo_vencido').prop('checked', false);
-        modal.find('#cargo_corte_reposicion').prop('checked', false);
 
-        // Verificar si alguna multa o cargo es aplicable
-        if (fines === 800) {
-            modal.find('#cargo_vencido').prop('checked', true);
-        }
+
     });
 
     // Añadir listeners para los checkboxes
-    $('#cargo_vencido, #cargo_mora, #cargo_corte_reposicion').on('change', function() {
-        var totalFines = 0;
-
-        if ($('#cargo_mora').is(':checked')) {
-            totalFines += 800;
-        }
-
-        if ($('#cargo_vencido').is(':checked')) {
-            totalFines += 1600;
-        }
-
-        if ($('#cargo_corte_reposicion').is(':checked')) {
-            totalFines += 10000;  // Actualizado a 10,000 para "Corte Reposición"
-        }
-
-        $('#fines').val(totalFines);
-    });
 
     // Función para manejar los datos al actualizar el formulario
     $('#editReadingForm').on('submit', function() {
