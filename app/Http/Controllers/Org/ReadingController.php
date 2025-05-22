@@ -10,6 +10,8 @@ use App\Models\Org;
 use App\Models\Reading;
 use App\Models\Section;
 use App\Models\Service;
+use App\Models\TierConfig;
+use App\Models\FixedCostConfig;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
 
@@ -152,28 +154,46 @@ class ReadingController extends Controller
 
     private function updateReading($org, $reading, $data)
     {
+        $tier = TierConfig::where('org_id', $org->id)->OrderBy('range_to', 'ASC')->get();
+        $configCost = FixedCostConfig::where('org_id', $org->id)->first();
+
         $reading->previous_reading = $data['previous_reading'] ?? $reading->previous_reading;
         $reading->current_reading = $data['current_reading'];
 
         $reading->cm3 = max(0, $reading->current_reading - $reading->previous_reading);
 
         $service = Service::findOrFail($reading->service_id);
-        $cargo_fijo = 3000;
+        $cargo_fijo = $configCost->fixed_charge_penalty;
         $subsidio = $service->meter_plan; // 0 o 1
         $porcentaje_subsidio = $service->percentage / 100;
         $consumo_agua_potable = 0;
         $subsidioDescuento = 0;
         $cm3 = $reading->cm3;
         $consumoNormal = 0;
+        // usar tier para poder armar los tramos
+        // $tramoV1 = 500;
+        // $tramoV2 = 700;
+        // $tramoV3 = 1300;
+        // $tramos = [
+        //     ['hasta' => 15, 'precio' => $tramoV1],
+        //     ['hasta' => 30, 'precio' => $tramoV2],
+        //     ['hasta' => PHP_INT_MAX, 'precio' => $tramoV3],
+        // ];
 
-        $tramoV1 = 500;
-        $tramoV2 = 700;
-        $tramoV3 = 1300;
-        $tramos = [
-            ['hasta' => 15, 'precio' => $tramoV1],
-            ['hasta' => 30, 'precio' => $tramoV2],
-            ['hasta' => PHP_INT_MAX, 'precio' => $tramoV3],
-        ];
+            $tramos = [];
+        foreach ($tier as $t) {
+            $tramos[] = [
+                'hasta' => $t->range_to,
+                'precio' => $t->value,
+            ];
+        }
+        if (empty($tramos) || end($tramos)['hasta'] < PHP_INT_MAX) {
+            $tramos[] = [
+                'hasta' => PHP_INT_MAX,
+                'precio' => end($tramos)['precio'] ?? 0,
+            ];
+        }
+
 
         $anterior = 0;
         $restante = $cm3;
@@ -190,11 +210,11 @@ class ReadingController extends Controller
                 $precioConSubsidio = $precio * (1 - $porcentaje_subsidio);// esto es el 0.4 o 0.6? es lo que se descuenta o el total, deverisa ser el descuento, osea el 0.4 el que se muestra
                 $consumo_agua_potable += $cantidadSubvencionada * $precioConSubsidio;
                 $consumo_agua_potable += $cantidadNormal * $precio;
-                $consumoNormal +=$cantidad * $precio;
+                $consumoNormal += $cantidad * $precio;
                 $subsidioDescuento = $cantidadSubvencionada * ($precio - $precioConSubsidio);
             } else {
                 $consumo_agua_potable += $cantidad * $precio;
-                 $consumoNormal +=$cantidad * $precio;
+                $consumoNormal += $cantidad * $precio;
             }
 
             $restante -= $cantidad;
@@ -249,11 +269,17 @@ class ReadingController extends Controller
         $reading = Reading::findOrFail($readingId);
         $reading->member = Member::findOrFail($reading->member_id);
         $reading->service = Service::findOrFail($reading->service_id);
-        $sections = Section::where('org_id', $id)->OrderBy('from_to', 'ASC')->get();
+        $tier = TierConfig::where('org_id', $id)->OrderBy('range_to', 'ASC')->get();
+        $configCost = FixedCostConfig::where('org_id', $org->id)->first();
 
-        if ($sections->isEmpty()) {
+        if ($tier->isEmpty()) {
             \Log::error("No se encontraron secciones para la organización con ID: {$id}");
             abort(404, 'No se encontraron secciones.');
+        }
+
+        if (!$configCost) {
+            \Log::error("No se encontró configuración de costos fijos para la organización con ID: {$org->id}");
+            abort(404, 'Configuración de costos fijos no encontrada.');
         }
 
         // Asegurándonos de que el consumo es mayor que 0
@@ -262,30 +288,31 @@ class ReadingController extends Controller
 
         $detalle_sections = [];
         $consumo_restante = $consumo;
-
-        foreach ($sections as $section) {
-            $tramo_desde = $section->from_to;
-            $tramo_hasta = $section->until_to;
-            $v = $section->until_to - $section->from_to + 1;
+          \Log::info("informacino del tier: " . $tier);
+        foreach ($tier as $tierConfig) {
+            $tramo_desde = $tierConfig->range_from;
+            $tramo_hasta = $tierConfig->range_to;
+            $v = $tierConfig->range_to - $tierConfig->range_from + 1;
 
             $m3_en_este_tramo = min($v, $consumo);
             if ($consumo >= $v) {
-                $section->section = $section->from_to . " Hasta " . $section->until_to;
-                $section->m3 = $m3_en_este_tramo;//variable para el boleta.blade
-                $section->precio = $section->cost;
-               $section->total = $m3_en_este_tramo * $section->cost;
+                $tierConfig->section = $tierConfig->range_from . " Hasta " . $tierConfig->range_to;
+                $tierConfig->m3 = $m3_en_este_tramo;//variable para el boleta.blade
+                $tierConfig->precio = $tierConfig->value;
+                $tierConfig->total =$m3_en_este_tramo * $tierConfig->value;
                 $consumo = $reading->cm3 - $m3_en_este_tramo;
             } else {
-                $section->section = $section->from_to . " Hasta " . $section->until_to;
-                $section->m3 = $m3_en_este_tramo;//variable para el boleta.blade
-                $section->precio = $section->cost;
-               $section->total = $m3_en_este_tramo * $section->cost;
+                $tierConfig->section = $tierConfig->range_from . " Hasta " . $tierConfig->range_to;
+                $tierConfig->m3 = $m3_en_este_tramo;//variable para el boleta.blade
+                $tierConfig->precio = $tierConfig->value;
+                $tierConfig->total =$m3_en_este_tramo * $tierConfig->value;
                 $consumo = 0;
             }
+              $detalle_sections[] = $tierConfig;
         }
 
         // Valores fijos
-        $cargo_fijo = 3000;                          // Cargo fijo
+        $cargo_fijo = $configCost->fixed_charge_penalty;                          // Cargo fijo
         $subsidio = $reading->service->meter_plan; // Subsidio, si existe
 
         // Aquí calculamos el subtotal de consumo (con tramos)
@@ -300,7 +327,7 @@ class ReadingController extends Controller
                     $valor = $detalle_sections[$i]['total'] / $subsidio;
                 }
             }
-            $consumo_agua_potable += $valor;
+            $consumo_agua_potable +=(int) ($valor);
         }
 
         $subtotal_consumo = $consumo_agua_potable + $cargo_fijo;
@@ -331,11 +358,13 @@ class ReadingController extends Controller
         switch (strtolower($docType)) {
             case 'boleta':
                 \Log::info('Entrando a la vista de Boleta');
-                return view('orgs.boleta', compact('reading', 'org', 'detalle_sections', 'sections', 'subtotal_consumo', 'total_con_iva'));
+                \Log::info('tier'. $tier);
+                \Log::info('configCost'.$configCost);
+                return view('orgs.boleta', compact('reading', 'org', 'detalle_sections', 'tier','configCost', 'subtotal_consumo', 'total_con_iva'));
 
             case 'factura':
                 \Log::info('Entrando a la vista de Factura');
-                return view('orgs.factura', compact('reading', 'org', 'detalle_sections', 'sections', 'subtotal_consumo', 'iva', 'total_con_iva'));
+                return view('orgs.factura', compact('reading', 'org', 'detalle_sections', 'tier','configCost', 'subtotal_consumo', 'iva', 'total_con_iva'));
             //$pdf = Pdf::loadView('orgs.factura', compact('reading', 'org', 'detalle_sections', 'sections', 'subtotal_consumo', 'iva', 'total_con_iva'));
             //return $pdf->stream();
 

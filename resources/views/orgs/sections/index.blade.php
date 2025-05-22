@@ -50,18 +50,18 @@
                                 placeholder="Ingresa el max. m3 del subsidio">
                         </div>
                         <!-- Botón Filtrar -->
-                        <div class="col-md-3 d-flex justify-content-md-end align-items-center mt-3 mt-md-0">
-                            <button type="submit" class="btn btn-primary btn-sm rounded-pill px-4 shadow-sm pulse-btn m-1"><i class="bi bi-save me-2"></i>Guardar</button>
+                        <div class="col-md-3 d-flex justify-content-md-start align-items-center mt-3 mt-md-0">
+                            <button type="submit" class="btn btn-primary btn-sm rounded-pill px-4 shadow-sm pulse-btn m-2"><i class="bi bi-save me-2"></i>Guardar</button>
                                <a href="{{ route('orgs.sections.export', $org->id) }}"
                                 class="btn btn-primary btn-sm rounded-pill px-4 shadow-sm pulse-btn"><!-- route -->
                                 <i class="bi bi-box-arrow-right me-2"></i>Exportar
                             </a>
                         </div>
 
-                         <div class="col-md-2 mt-1">
+                         <div class="col-md-2 mt-3">
                              <a href="{{route('orgs.sections.create', $org->id)}}"
                                 class="btn btn-primary btn-sm rounded-pill px-4 shadow-sm pulse-btn me-2">
-                                <i class="bi bi-plus-circle-fill me-2"></i>Nuevo
+                                <i class="bi bi-plus-circle-fill me-2"></i>Nuevo tramo
                             </a>
                          </div>
 

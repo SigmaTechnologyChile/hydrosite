@@ -157,12 +157,12 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach($sections as $section)
+                        @foreach($tier as $tierConfig)
                             <tr>
-                                <td class="text-end">{{ $section->from_to }} Hasta {{ $section->until_to }}</td>
-                                <td class="text-end">{{ $section->m3 }} X</td>
-                                <td class="text-end">@money($section->cost)</td>
-                                <td class="text-end">@money($section->total)</td>
+                                <td class="text-end">{{ $tierConfig->range_from }} Hasta {{ $tierConfig->range_to }}</td>
+                                <td class="text-end">{{ $tierConfig->m3 }} X</td>
+                                <td class="text-end">@money($tierConfig->precio)</td>
+                                <td class="text-end">@money($tierConfig->total)</td>
                             </tr>
                         @endforeach
 
@@ -170,7 +170,7 @@
                             <td class="text-end">Facturado</td>
                             <td class="text-end">{{ $reading->cm3 }}</td>
                             <td></td>
-                            <td class="text-end">@money($sections->sum('total'))</td>
+                            <td class="text-end">@money($tier->sum('total'))</td>
                         </tr>
                     </tbody>
                 </table>
