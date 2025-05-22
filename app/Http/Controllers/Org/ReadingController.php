@@ -14,6 +14,7 @@ use App\Models\TierConfig;
 use App\Models\FixedCostConfig;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
+use Illuminate\Support\Facades\DB;
 
 class ReadingController extends Controller
 {
@@ -66,6 +67,7 @@ class ReadingController extends Controller
             ->orderBy('period', 'desc')->paginate(20);
 
         $locations = Location::where('org_id', $org->id)->orderby('order_by', 'ASC')->get();
+
 
         return view('orgs.readings.index', compact('org', 'readings', 'locations'));
     }
@@ -170,17 +172,8 @@ class ReadingController extends Controller
         $subsidioDescuento = 0;
         $cm3 = $reading->cm3;
         $consumoNormal = 0;
-        // usar tier para poder armar los tramos
-        // $tramoV1 = 500;
-        // $tramoV2 = 700;
-        // $tramoV3 = 1300;
-        // $tramos = [
-        //     ['hasta' => 15, 'precio' => $tramoV1],
-        //     ['hasta' => 30, 'precio' => $tramoV2],
-        //     ['hasta' => PHP_INT_MAX, 'precio' => $tramoV3],
-        // ];
 
-            $tramos = [];
+        $tramos = [];
         foreach ($tier as $t) {
             $tramos[] = [
                 'hasta' => $t->range_to,
@@ -226,23 +219,50 @@ class ReadingController extends Controller
 
 
         $map = [
-            'cargo_mora' => 'interest_late',
-            'cargo_vencido' => 'interest_due',
-            'cargo_corte_reposicion' => 'replacement_cut',
+            'cargo_mora' => 'late_fee_penalty',
+            'cargo_vencido' => 'expired_penalty',
+            'cargo_corte_reposicion' => 'replacement_penalty',
         ];
 
+        // Obtener el valor de la multa desde la tabla readings (ya cargado en $reading)
+        $fines = $reading->fines; // Este valor es el total de las multas registradas
+
+        // Cargar el valor de la multa por corte/reposición desde la configuración
+        $replacementPenalty = DB::table('fixed_costs_config')->value('replacement_penalty');
+
+        // Si la multa de corte/reposición es de 10000 o más, se debe marcar automáticamente
+        $applyCutPenalty = $fines >= 10000;
+
+        // Inicializar el valor máximo de multa a aplicar
         $maxFine = 0;
 
+        // Iterar sobre el mapa para aplicar las multas seleccionadas manualmente o por regla
         foreach ($map as $key => $orgProperty) {
-            if (isset($data[$key])) {
-                $value = $org->$orgProperty;
-                if ($value > $maxFine) {
-                    $maxFine = $value;
+            // Caso especial para corte/reposición
+            if ($key === 'cargo_corte_reposicion') {
+                if ($applyCutPenalty || isset($data[$key])) {
+                    $value = $replacementPenalty;
+                    if ($value > $maxFine) {
+                        $maxFine = $value;
+                    }
+                }
+            } else {
+                if (isset($data[$key])) {
+                    $value = $org->$orgProperty;
+                    if ($value > $maxFine) {
+                        $maxFine = $value;
+                    }
                 }
             }
         }
 
+        // Guardar la multa máxima en la lectura
         $reading->fines = $maxFine;
+        $reading->save(); // No olvides guardar si aún no lo haces
+
+
+
+
         $reading->other = $data['other'] ?? $reading->other;
 
         $subtotal_consumo_mes = $consumo_agua_potable + $cargo_fijo;
@@ -271,7 +291,6 @@ class ReadingController extends Controller
         $reading->service = Service::findOrFail($reading->service_id);
         $tier = TierConfig::where('org_id', $id)->OrderBy('range_to', 'ASC')->get();
         $configCost = FixedCostConfig::where('org_id', $org->id)->first();
-
         if ($tier->isEmpty()) {
             \Log::error("No se encontraron secciones para la organización con ID: {$id}");
             abort(404, 'No se encontraron secciones.');
@@ -288,7 +307,7 @@ class ReadingController extends Controller
 
         $detalle_sections = [];
         $consumo_restante = $consumo;
-          \Log::info("informacino del tier: " . $tier);
+        \Log::info("informacino del tier: " . $tier);
         foreach ($tier as $tierConfig) {
             $tramo_desde = $tierConfig->range_from;
             $tramo_hasta = $tierConfig->range_to;
@@ -299,45 +318,33 @@ class ReadingController extends Controller
                 $tierConfig->section = $tierConfig->range_from . " Hasta " . $tierConfig->range_to;
                 $tierConfig->m3 = $m3_en_este_tramo;//variable para el boleta.blade
                 $tierConfig->precio = $tierConfig->value;
-                $tierConfig->total =$m3_en_este_tramo * $tierConfig->value;
+                $tierConfig->total = $m3_en_este_tramo * $tierConfig->value;
                 $consumo = $reading->cm3 - $m3_en_este_tramo;
             } else {
                 $tierConfig->section = $tierConfig->range_from . " Hasta " . $tierConfig->range_to;
                 $tierConfig->m3 = $m3_en_este_tramo;//variable para el boleta.blade
                 $tierConfig->precio = $tierConfig->value;
-                $tierConfig->total =$m3_en_este_tramo * $tierConfig->value;
+                $tierConfig->total = $m3_en_este_tramo * $tierConfig->value;
                 $consumo = 0;
             }
-              $detalle_sections[] = $tierConfig;
+            $detalle_sections[] = $tierConfig;
         }
 
         // Valores fijos
-        $cargo_fijo = $configCost->fixed_charge_penalty;                          // Cargo fijo
-        $subsidio = $reading->service->meter_plan; // Subsidio, si existe
+         $cargo_fijo = $configCost->fixed_charge_penalty;
+        $consumo_agua_potable = $reading->vc_water ?? 0; // Valor ya calculado con subsidio aplicado
+        $subsidio_descuento = $reading->v_subs ?? 0; // Subsidio ya calculado
 
-        // Aquí calculamos el subtotal de consumo (con tramos)
-        // $consumo_agua_potable = $detalle_sections ? array_sum(array_column($detalle_sections, 'total')) : 0;
-        $consumo_agua_potable = 0;
-
-        for ($i = 0; $i < count($detalle_sections); $i++) {
-            $valor = $detalle_sections[$i]['total'] ?? 0;
-
-            if ($i === 0) {
-                if ($subsidio != 0) {
-                    $valor = $detalle_sections[$i]['total'] / $subsidio;
-                }
-            }
-            $consumo_agua_potable +=(int) ($valor);
-        }
-
-        $subtotal_consumo = $consumo_agua_potable + $cargo_fijo;
+        $subtotal_consumo = $consumo_agua_potable + $cargo_fijo - $subsidio_descuento;
 
         // Verificando el subtotal
         \Log::info("Subtotal de consumo (sin IVA): " . $subtotal_consumo);
 
+          $subtotal_con_cargos = $subtotal_consumo + $reading->fines + ($reading->other ?? 0) + $reading->s_previous;
+
         // Definir el IVA solo si el tipo de documento es factura
         $iva = 0;
-        $total_con_iva = $subtotal_consumo; // Inicializamos con el subtotal sin IVA
+        $total_con_iva = $subtotal_con_cargos; // Inicializamos con el subtotal sin IVA
 
         $routeName = \Route::currentRouteName();
         if ($routeName === 'orgs.readings.boleta') {
@@ -345,8 +352,8 @@ class ReadingController extends Controller
         } elseif ($routeName === 'orgs.readings.factura') {
             $docType = 'factura';
             // Calcular IVA solo si es factura (19%)
-            $iva = $subtotal_consumo * 0.19; // IVA sobre el subtotal
-            $total_con_iva = $subtotal_consumo + $iva;
+            $iva = $subtotal_con_cargos * 0.19; // IVA sobre el subtotal
+            $total_con_iva = $subtotal_con_cargos + $iva;
         } else {
             $docType = 'boleta';
         }
@@ -358,13 +365,13 @@ class ReadingController extends Controller
         switch (strtolower($docType)) {
             case 'boleta':
                 \Log::info('Entrando a la vista de Boleta');
-                \Log::info('tier'. $tier);
-                \Log::info('configCost'.$configCost);
-                return view('orgs.boleta', compact('reading', 'org', 'detalle_sections', 'tier','configCost', 'subtotal_consumo', 'total_con_iva'));
+                \Log::info('tier' . $tier);
+                \Log::info('configCost' . $configCost);
+                return view('orgs.boleta', compact('reading', 'org', 'detalle_sections', 'tier', 'configCost', 'subtotal_consumo', 'total_con_iva'));
 
             case 'factura':
                 \Log::info('Entrando a la vista de Factura');
-                return view('orgs.factura', compact('reading', 'org', 'detalle_sections', 'tier','configCost', 'subtotal_consumo', 'iva', 'total_con_iva'));
+                return view('orgs.factura', compact('reading', 'org', 'detalle_sections', 'tier', 'configCost', 'subtotal_con_cargos', 'iva', 'total_con_iva'));
             //$pdf = Pdf::loadView('orgs.factura', compact('reading', 'org', 'detalle_sections', 'sections', 'subtotal_consumo', 'iva', 'total_con_iva'));
             //return $pdf->stream();
 

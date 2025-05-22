@@ -140,6 +140,12 @@
                             @money($reading->fines)
                         </td>
                     </tr>
+  <tr>
+                        <td>(+) Otros</td>
+                        <td class="text-end">
+                            @money($reading->other)
+                        </td>
+                    </tr>
 
                 </table>
             </div>
@@ -180,13 +186,13 @@
         <div class="row justify-content-end">
             <div class="col-md-6">
                 <table class="table table-sm table-bordered">
-                    <tr>
+                   <tr>
                         <td class="fw-bold text-end">SubTotal</td>
-                        <td class="text-end">@money($reading->total)</td>
+                        <td class="text-end">@money($total_con_iva ?? $reading->total ?? 0)</td>
                     </tr>
                     <tr>
                         <td class="fw-bold text-end">Total</td>
-                        <td class="text-end text-success fw-bold">@money($reading->total)</td>
+                        <td class="text-end text-success fw-bold">@money($total_con_iva ?? $reading->total ?? 0)</td>
                     </tr>
                 </table>
             </div>
