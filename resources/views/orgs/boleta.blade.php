@@ -112,7 +112,7 @@
                 <table class="table table-sm table-bordered mb-0">
                     <tr>
                         <td>(+) Cargo Fijo</td>
-                        <td class="text-end">@money($org->fixed_charge)</td>
+                        <td class="text-end">@money($configCost->fixed_charge_penalty)</td>
                     </tr>
                     <tr>
                         <td>(+) Consumo Agua Potable</td>
