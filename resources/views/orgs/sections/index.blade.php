@@ -1,55 +1,73 @@
-@extends('layouts.nice', ['active'=>'orgs.sections.index','title'=>'Tramos'])
+@extends('layouts.nice', ['active' => 'orgs.sections.index', 'title' => 'Tramos'])
 
 @section('content')
     <div class="pagetitle">
-      <h1>{{$org->name}}</h1>
-      <nav>
-        <ol class="breadcrumb">
-          <li class="breadcrumb-item"><a href="/">Home</a></li>
-          <li class="breadcrumb-item"><a href="{{route('orgs.index')}}">Organizaciones</a></li>
-          <li class="breadcrumb-item"><a href="{{route('orgs.dashboard',$org->id)}}">{{$org->name}}</a></li>
-          <li class="breadcrumb-item active">Tramos</li>
-        </ol>
-      </nav>
+        <h1>{{$org->name}}</h1>
+        <nav>
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/">Home</a></li>
+                <li class="breadcrumb-item"><a href="{{route('orgs.index')}}">Organizaciones</a></li>
+                <li class="breadcrumb-item"><a href="{{route('orgs.dashboard', $org->id)}}">{{$org->name}}</a></li>
+                <li class="breadcrumb-item active">Tramos</li>
+            </ol>
+        </nav>
     </div><!-- End Page Title -->
-    
+
     <section class="section dashboard">
         <div class="card top-selling overflow-auto">
             <div class="card-body pt-2">
-                <form method="POST" action="{{route('orgs.fixed_charge_store',$org->id)}}">
+                <form method="POST" action="{{ route('orgs.sections.storeFixedCost', $org->id) }}">
                     @csrf
                     <div class="row align-items-end">
-                        <!-- Buscador -->
                         <div class="col-md-2">
                             <label class="form-label">Valor cargo fijo:</label>
-                            <input type="number" name="fixed_charge" class="form-control" value="{{$org->fixed_charge}}" placeholder="Ingresa el valor cargo fijo">
+                            <input type="number" name="fixed_charge_penalty" class="form-control"
+                                value="{{ old('fixed_charge_penalty', $fixedCostConfig->fixed_charge_penalty) }}"
+                                placeholder="Ingresa el valor cargo fijo">
                         </div>
                         <div class="col-md-2">
                             <label class="form-label">Interes cargo vencido:</label>
-                            <input type="number" name="interest_due" class="form-control" value="{{$org->interest_due}}" placeholder="Ingresa el valor de interes cargo vencido">
+                            <input type="number" name="expired_penalty" class="form-control"
+                                value="{{ old('expired_penalty', $fixedCostConfig->expired_penalty) }}"
+                                placeholder="Ingresa el valor de interes cargo vencido">
                         </div>
                         <div class="col-md-2">
                             <label class="form-label">Interes cargo Mora:</label>
-                            <input type="number" name="interest_late" class="form-control" value="{{$org->interest_late}}" placeholder="Ingresa el valor de interes cargo Mora">
+                            <input type="number" name="late_fee_penalty" class="form-control"
+                                value="{{ old('late_fee_penalty', $fixedCostConfig->late_fee_penalty) }}"
+                                placeholder="Ingresa el valor de interes cargo Mora">
                         </div>
                         <div class="col-md-2">
                             <label class="form-label">Valor corte y reposición</label>
-                            <input type="number" name="replacement_cut" class="form-control" value="{{$org->replacement_cut}}" placeholder="Ingresa el valor corte y reposición">
+                            <input type="number" name="replacement_penalty" class="form-control"
+                                value="{{ old('replacement_penalty', $fixedCostConfig->replacement_penalty) }}"
+                                placeholder="Ingresa el valor corte y reposición">
+                        </div>
+                        <div class="col-md-1">
+                            <label for="max_covered_m3" class="form-label">Máximo m³ cubierto</label>
+                            <input type="number" step="0" name="max_covered_m3" id="max_covered_m3" class="form-control"
+                                value="{{ old('max_covered_m3', $fixedCostConfig->max_covered_m3) }}"
+                                placeholder="Ingresa el max. m3 del subsidio">
                         </div>
                         <!-- Botón Filtrar -->
-                        <div class="col-md-1">
-                            <button type="submit" class="btn btn-primary w-100">Guardar</button>
-                        </div>
                         <div class="col-md-3 d-flex justify-content-md-end align-items-center mt-3 mt-md-0">
-                            <a href="{{route('orgs.sections.create',$org->id)}}" class="btn btn-primary btn-sm rounded-pill px-4 shadow-sm pulse-btn me-2">
-                                <i class="bi bi-plus-circle-fill me-2"></i>Nuevo
-                            </a>
-                            <a href="{{ route('orgs.sections.export',$org->id) }}" class="btn btn-primary btn-sm rounded-pill px-4 shadow-sm pulse-btn"><!-- route -->
+                            <button type="submit" class="btn btn-primary btn-sm rounded-pill px-4 shadow-sm pulse-btn m-1"><i class="bi bi-save me-2"></i>Guardar</button>
+                               <a href="{{ route('orgs.sections.export', $org->id) }}"
+                                class="btn btn-primary btn-sm rounded-pill px-4 shadow-sm pulse-btn"><!-- route -->
                                 <i class="bi bi-box-arrow-right me-2"></i>Exportar
                             </a>
                         </div>
+
+                         <div class="col-md-2 mt-1">
+                             <a href="{{route('orgs.sections.create', $org->id)}}"
+                                class="btn btn-primary btn-sm rounded-pill px-4 shadow-sm pulse-btn me-2">
+                                <i class="bi bi-plus-circle-fill me-2"></i>Nuevo
+                            </a>
+                         </div>
+
                     </div>
                 </form>
+
             </div>
             <div class="card-body">
                 <div class="table-responsive">
@@ -65,25 +83,29 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach($sections as $section)
-                            <tr data-id="{{ $section->id }}">
-                                <td>{{ $section->id }}</td>
-                                <td>{{ $section->name }}</td>
-                                <td><input class="form-text" type="number" name="from_to" value="{{$section->from_to}}" readonly></td>
-                                <td><input class="form-text" type="number" name="until_to" value="{{$section->until_to}}" readonly></td>
-                                <td><input class="form-text" type="number" name="cost" value="{{$section->cost}}" readonly></td>
-                                <td class="text-center">
-                                    <a href="{{ route('orgs.sections.edit', [$org->id, $section->id]) }}" class="btn btn-sm btn-success">
-                                        <i class="bi bi-pencil-square me-1"></i> Editar
-                                    </a>
-                                </td>
-                            </tr>
+                            @foreach($tiers as $tier)
+                                <tr data-id="{{ $tier->id }}">
+                                    <td>{{ $tier->id }}</td>
+                                    <td>{{ $tier->tier_name}}</td>
+                                    <td><input class="form-text" type="number" name="range_from" value="{{$tier->range_from}}"
+                                            readonly></td>
+                                    <td><input class="form-text" type="number" name="range_to" value="{{$tier->range_to}}"
+                                            readonly></td>
+                                    <td><input class="form-text" type="number" name="value" value="{{$tier->value}}" readonly>
+                                    </td>
+                                    <td class="text-center">
+                                       <a href="{{ route('orgs.sections.edit', ['id' => $org->id, 'tramoId' => $tier->id]) }}"
+                                            class="btn btn-sm btn-success">
+                                            <i class="bi bi-pencil-square me-1"></i> Editar
+                                        </a>
+                                    </td>
+                                </tr>
                             @endforeach
                         </tbody>
                     </table>
                 </div>
             </div>
         </div>
-        {!! $sections->render('pagination::bootstrap-4') !!}
+        {{ $tiers->links('pagination::bootstrap-4') }}
     </section>
 @endsection

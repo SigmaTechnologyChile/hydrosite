@@ -5,90 +5,178 @@ namespace App\Http\Controllers\Org;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Org;
-use App\Models\Section;
-use App\Exports\SectionsExport;
-use Maatwebsite\Excel\Facades\Excel;
+use App\Models\FixedCostConfig;
+use App\Models\TierConfig;
+use App\Exports\ConfigsExport;
+
+
 
 class SectionController extends Controller
 {
     protected $_param;
     public $org;
-    
+
     public function __construct()
     {
         $this->middleware('auth');
         $id = \Route::current()->Parameter('id');
         $this->org = Org::find($id);
     }
-    
+
+
     public function index()
     {
         $org = $this->org;
-        $sections = Section::where('org_id',$org->id)->paginate(20);
-        return view('orgs.sections.index',compact('org','sections'));
+        $fixedCostConfig = FixedCostConfig::firstOrCreate(
+            ['org_id' => $org->id],
+            [
+                'fixed_charge_penalty' => 0,
+                'replacement_penalty' => 0,
+                'late_fee_penalty' => 0,
+                'expired_penalty' => 0,
+                'max_covered_m3' => 0,
+            ]
+        );
+
+        $tiers = TierConfig::where('org_id', $org->id)->paginate(20);
+        return view('orgs.sections.index', compact('org', 'fixedCostConfig', 'tiers'));
     }
-    
+
     public function create()
     {
         $org = $this->org;
-        return view('orgs.sections.create',compact('org'));
+        $fixedCostConfig = FixedCostConfig::where('org_id', $org->id)->first();
+        // $tier->org_id = $orgId;
+        return view('orgs.sections.create', compact('org', 'fixedCostConfig'));
     }
-    
-    public function store($orgId , Request $request)
+
+    public function storeTier(Request $request, $orgId)
     {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'from_to' => 'required|numeric|min:0',
-            'until_to' => 'required|numeric|gte:from_to',
-            'cost' => 'required|numeric|min:0',
+        $validated = $request->validate([
+            'tier_name' => 'required|string',
+            'range_from' => 'required|numeric',
+            'range_to' => 'required|numeric|gt:range_from',
+            'value' => 'required|numeric',
         ]);
-    
-        $section = new Section;
-        $section->org_id = $orgId;
-        $section->name = $request->name;
-        $section->from_to = $request->from_to;
-        $section->until_to = $request->until_to;
-        $section->cost = $request->cost;
-        $section->save();
-    
-        return redirect()->route('orgs.sections.index', $orgId)
-                         ->with('success', 'Tramo creado correctamente.');
+
+        $tier = new TierConfig();
+        $tier->org_id = $orgId;
+        $tier->tier_name = $request->input('tier_name');
+        $tier->range_from = $request->input('range_from');
+        $tier->range_to = $request->input('range_to');
+        $tier->value = $request->input('value');
+        $tier->save();
+
+        return redirect()->route('orgs.sections.index', $orgId)->with('success', 'Tramo creado correctamente');
     }
-    
-   public function edit($orgId, $tramoId)
+
+    // Guarda o actualiza valores en fixed_cost_config
+    public function storeFixedCost(Request $request, $orgId)
+    {
+        $validated = $request->validate([
+            'fixed_charge_penalty' => 'required|numeric',
+            'replacement_penalty' => 'required|numeric',
+            'late_fee_penalty' => 'required|numeric',
+            'expired_penalty' => 'required|numeric',
+            'max_covered_m3' => 'required|numeric',
+        ]);
+
+        $fixedCost = FixedCostConfig::firstOrNew(['org_id' => $orgId]);
+
+        $fixedCost->fixed_charge_penalty = $request->input('fixed_charge_penalty');
+        $fixedCost->replacement_penalty = $request->input('replacement_penalty');
+        $fixedCost->late_fee_penalty = $request->input('late_fee_penalty');
+        $fixedCost->expired_penalty = $request->input('expired_penalty');
+        $fixedCost->max_covered_m3 = $request->input('max_covered_m3');
+        $fixedCost->save();
+
+        return redirect()->route('orgs.sections.index', $orgId)->with('success', 'Configuración actualizada correctamente');
+    }
+
+
+    public function edit($orgId, $tramoId)
     {
         $org = Org::findOrFail($orgId);
-        $section = Section::findOrFail($tramoId);
-    
-        return view('orgs.sections.edit', compact('org', 'section'));
+        $tier = TierConfig::where('org_id', $orgId)->findOrFail($tramoId);
+        return view('orgs.sections.edit', compact('org', 'tier'));
     }
-    
-    public function update(Request $request, $orgId, $tramoId)
+
+
+
+    // public function update(Request $request, $orgId, $tierId)
+    // {
+    //     $tier = TierConfig::where('org_id', $orgId)->findOrFail($tierId);
+    //     $request->validate([
+    //         'tier_name' => 'required|string|max:255',
+    //         'range_from' => 'required|numeric',
+    //         'range_to' => 'required|numeric|gt:range_from',
+    //         'value' => 'required|numeric|min:0',
+    //     ]);
+
+    //     // Verificar solapamiento con otros tramos
+    //     $exists = TierConfig::where('org_id', $orgId)
+    //         ->where('id', '!=', $tier->id)
+    //         ->where(function ($query) use ($request) {
+    //             $query->whereBetween('range_from', [$request->range_from, $request->range_to])
+    //                 ->orWhereBetween('range_to', [$request->range_from, $request->range_to])
+    //                 ->orWhere(function ($query2) use ($request) {
+    //                     $query2->where('range_from', '<=', $request->range_from)
+    //                         ->where('range_to', '>=', $request->range_to);
+    //                 });
+    //         })
+    //         ->exists();
+
+    //     if ($exists) {
+    //         return redirect()->back()
+    //             ->withInput()
+    //             ->withErrors(['range_from' => 'El tramo se solapa con otro existente.']);
+    //     }
+
+    //     $tier->update([
+    //         'tier_name' => $request->tier_name,
+    //         'range_from' => $request->range_from,
+    //         'range_to' => $request->range_to,
+    //         'value' => $request->value,
+    //     ]);
+
+    //     return redirect()->route('orgs.sections.index', $orgId)
+    //         ->with('success', 'Tramo actualizado correctamente.');
+    // }
+
+
+public function update(Request $request, $orgId, $tramoId)
+{
+   // dd($request->all());
+    $tier = TierConfig::where('org_id', $orgId)->where('id', $tramoId)->firstOrFail();
+
+    $tier->update($request->only([
+        'tier_name', 'range_from', 'range_to', 'value'
+    ]));
+
+   // return redirect()->route('orgs.sections.edit', [$orgId])->with('success', 'Tramo actualizado');
+    return redirect()->route('orgs.sections.edit', [$orgId, $tramoId])
+    ->with('success', 'Tramo actualizado');
+}
+
+
+
+    public function destroy($orgId, $tramoId)
     {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'from_to' => 'required|numeric|min:0',
-            'until_to' => 'required|numeric|gte:from_to',
-            'cost' => 'required|numeric|min:0',
-        ]);
-    
-        $section = Section::findOrFail($tramoId);
-    
-        // Asignación campo por campo
-        $section->name = $request->name;
-        $section->from_to = $request->from_to;
-        $section->until_to = $request->until_to;
-        $section->cost = $request->cost;
-    
-        $section->save();
-    
-        return redirect()->route('orgs.sections.index', $orgId)
-                         ->with('success', 'Tramo actualizado correctamente.');
+        $tier = TierConfig::findOrFail($tramoId);
+        $tier->delete();
+
+        return redirect()->route('sections.index', $orgId)
+            ->with('success', 'Tramo eliminado correctamente.');
     }
-    
+
+
     /*Export Excel*/
-    public function export() 
+
+    public function export($id)
     {
-        return Excel::download(new SectionsExport, 'Section-'.date('Ymdhis').'.xlsx');
+        return \Maatwebsite\Excel\Facades\Excel::download(
+            new ConfigsExport($id),
+            'Configuraciones-' . date('YmdHis') . '.xlsx'
+        );
     }
 }

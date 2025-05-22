@@ -20,40 +20,30 @@
               <h5 class="card-title">Crear nuevo Tramo</h5>
 
               <!-- Floating Labels Form -->
-              <form class="row g-3"action="{{ route('orgs.sections.store',$org->id) }}" method="POST">
-                @csrf
-                <div class="col-md-6">
-                  <div class="form-floating">
-                    <input type="text" class="form-control" id="name" name="name" placeholder="100" min="1" required>
-                    <label for="name">Nombre de Tramo</label>
-                  </div>
-                </div>
-                <div class="col-md-6">
-                  <div class="form-floating">
-                    <input type="number" class="form-control" id="from_to" name="from_to" placeholder="100" min="1" required>
-                    <label for="from_to">Desde</label>
-                  </div>
-                </div>
-                <div class="col-md-6">
-                  <div class="form-floating">
-                    <input type="number" class="form-control" id="until_to" name="until_to" placeholder="100" min="1" required>
-                    <label for="until_to">Hasta</label>
-                  </div>
-                </div>
-                <div class="col-md-6">
-                  <div class="form-floating">
-                    <input type="number" class="form-control" id="cost" name="cost" placeholder="100" min="1" required>
-                    <label for="cost">Valor $</label>
-                  </div>
-                </div>
-                <div class="text-center">
-                  <button type="submit" class="btn btn-primary"> Crear</button>
-                  <button type="reset" class="btn btn-secondary">Borrar</button>
-                </div>
-              </form><!-- End floating Labels Form -->
+          <form method="POST" action="{{ route('orgs.sections.storeTier', $org->id) }}">
+    @csrf
+    <div class="mb-3">
+        <label for="tier_name" class="form-label">Nombre del tramo</label>
+        <input type="text" class="form-control" name="tier_name" id="tier_name" required>
+    </div>
+    <div class="mb-3">
+        <label for="range_from" class="form-label">Desde</label>
+        <input type="number" class="form-control" name="range_from" id="range_from" required>
+    </div>
+    <div class="mb-3">
+        <label for="range_to" class="form-label">Hasta</label>
+        <input type="number" class="form-control" name="range_to" id="range_to" required>
+    </div>
+    <div class="mb-3">
+        <label for="value" class="form-label">Valor</label>
+        <input type="number" class="form-control" name="value" id="value" required>
+    </div>
+    <button type="submit" class="btn btn-primary">Crear Tramo</button>
+</form>
+<!-- End floating Labels Form -->
 
             </div>
           </div>
     </section>
-    
+
 @endsection

@@ -32,7 +32,7 @@ Route::get('/deudas/{rut}', [App\Http\Controllers\AccountController::class, 'deb
 
 Route::get('/terminos-y-condiciones', function () {
     return view('termsofservice');
-})->name('termsofservice');   
+})->name('termsofservice');
 Route::get('/politicas-de-privacidad', function () {
     return view('privacypolicy');
 })->name('privacypolicy');
@@ -72,16 +72,16 @@ Route::get('/paquetes', [App\Http\Controllers\PackageController::class, 'index']
 
 // Organizationes routes
 Route::prefix('org')->name('orgs.')->group(function () {
-    
+
     Route::post('{id}/up_cargo_fijo', [App\Http\Controllers\OrgController::class, 'fixed_charge_store'])->name('fixed_charge_store');
-    
+
     Route::get('{id}/dashboard', [App\Http\Controllers\OrgController::class, 'dashboard'])->name('dashboard');
-    
+
     Route::get('{id}/socios', [App\Http\Controllers\Org\MemberController::class, 'index'])->name('members.index');
     Route::get('{id}/socios/nuevo', [App\Http\Controllers\Org\MemberController::class, 'create'])->name('members.create');
-    
+
     Route::post('{id}/socios', [App\Http\Controllers\Org\MemberController::class, 'store'])->name('members.store');
-    
+
     Route::get('{id}/socios/{member}/editar', [App\Http\Controllers\Org\MemberController::class, 'edit'])->name('members.edit');
     Route::put('{id}/socios/{memberId}', [App\Http\Controllers\Org\MemberController::class, 'update'])->name('members.update');
     Route::put('{id}/member/{memberId}/services/{serviceId}/transfer', [App\Http\Controllers\Org\MemberController::class, 'transferService'])->name('members.services.transfer');
@@ -107,7 +107,7 @@ Route::prefix('org')->name('orgs.')->group(function () {
     Route::get('{id}/lecturas/export', [App\Http\Controllers\Org\ReadingController::class, 'export'])->name('readings.export');
     Route::post('{id}/readings/update-current', [App\Http\Controllers\Org\ReadingController::class, 'current_reading_update'])->name('readings.current_reading_update');
     Route::get('{id}/lecturas/history/export', [App\Http\Controllers\Org\ReadingController::class, 'exportHistory'])->name('readings.history.export');
-    
+
     Route::get('{id}/folios', [App\Http\Controllers\Org\FolioController::class, 'index'])->name('folios.index');
     Route::get('{id}/folios/nuevo', [App\Http\Controllers\Org\FolioController::class, 'create'])->name('folios.create');
     Route::post('{id}/folios/store', [App\Http\Controllers\Org\FolioController::class, 'store'])->name('folios.store');
@@ -116,10 +116,13 @@ Route::prefix('org')->name('orgs.')->group(function () {
     Route::get('{id}/tramos/nuevo', [App\Http\Controllers\Org\SectionController::class, 'create'])->name('sections.create');
     Route::get('{id}/tramos/{tramoId}/editar', [App\Http\Controllers\Org\SectionController::class, 'edit'])->name('sections.edit');
     Route::put('{id}/tramos/{tramoId}', [App\Http\Controllers\Org\SectionController::class, 'update'])->name('sections.update');
-    Route::post('{id}/tramos/store', [App\Http\Controllers\Org\SectionController::class, 'store'])->name('sections.store');
+
+Route::post('{id}/tramos/store-tier', [App\Http\Controllers\Org\SectionController::class, 'storeTier'])->name('sections.storeTier'); // para tramos (tier_config)
+Route::post('{id}/tramos/store-fixed-cost', [App\Http\Controllers\Org\SectionController::class, 'storeFixedCost'])->name('sections.storeFixedCost'); // para fixed cost config
+
     //Export Excel
     Route::get('{id}/tramos/export', [App\Http\Controllers\Org\SectionController::class, 'export'])->name('sections.export');
-    
+
     Route::get('{id}/servicios', [App\Http\Controllers\Org\ServiceController::class, 'index'])->name('services.index');
     Route::get('{id}/servicios/nuevo', [App\Http\Controllers\Org\ServiceController::class, 'create'])->name('services.create');
     Route::get('{id}/member/{memberId}/services/create', [App\Http\Controllers\Org\ServiceController::class, 'createForMember'])->name('services.createForMember');
@@ -139,7 +142,7 @@ Route::prefix('org')->name('orgs.')->group(function () {
 
     Route::get('{id}/sectores', [App\Http\Controllers\Org\LocationController::class, 'index'])->name('locations.index');
     Route::get('{id}/sectores/nuevo', [App\Http\Controllers\Org\LocationController::class, 'create'])->name('locations.create');
-    
+
     Route::post('{id}/sectores', [App\Http\Controllers\Org\LocationController::class, 'store'])->name('locations.store');
     Route::get('{id}/sectores/{locationId}/editar', [App\Http\Controllers\Org\LocationController::class, 'edit'])->name('locations.edit');
     Route::put('{id}/sectores/{locationId}', [App\Http\Controllers\Org\LocationController::class, 'update'])->name('locations.update');
@@ -148,16 +151,16 @@ Route::prefix('org')->name('orgs.')->group(function () {
     Route::get('{id}/sectores/export', [App\Http\Controllers\Org\LocationController::class, 'export'])->name('locations.export');
 
     Route::get('{id}/documentos', [App\Http\Controllers\Org\DocumentController::class, 'index'])->name('documents.index');
-    Route::get('{id}/documentos/nuevo', [App\Http\Controllers\Org\DocumentController::class, 'create'])->name('documents.create'); 
-    
+    Route::get('{id}/documentos/nuevo', [App\Http\Controllers\Org\DocumentController::class, 'create'])->name('documents.create');
+
     Route::get('{id}/inventarios', [App\Http\Controllers\Org\InventaryController::class, 'index'])->name('inventories.index');
     Route::get('{id}/inventarios/nuevo', [App\Http\Controllers\Org\InventaryController::class, 'create'])->name('inventories.create');
-    Route::post('{id}/inventarios', [App\Http\Controllers\Org\InventaryController::class, 'store'])->name('inventories.store'); 
+    Route::post('{id}/inventarios', [App\Http\Controllers\Org\InventaryController::class, 'store'])->name('inventories.store');
     Route::get('{id}/inventarios/{inventoryId}/editar', [App\Http\Controllers\Org\InventaryController::class, 'edit'])->name('inventories.edit');
     Route::put('{id}/inventarios/{inventoryId}', [App\Http\Controllers\Org\InventaryController::class, 'update'])->name('inventories.update');
     //Export Excel
     Route::get('{id}/inventarios/export', [App\Http\Controllers\Org\InventaryController::class, 'export'])->name('inventories.export');
-    
+
     Route::get('{id}/inventarios/categories', [App\Http\Controllers\Org\InventoryCategoryController::class, 'index'])->name('categories.index');
     Route::get('{id}/inventarios/categories/create', [App\Http\Controllers\Org\InventoryCategoryController::class, 'create'])->name('categories.create');
     Route::post('{id}/inventarios/categories', [App\Http\Controllers\Org\InventoryCategoryController::class, 'store'])->name('categories.store');
@@ -166,7 +169,7 @@ Route::prefix('org')->name('orgs.')->group(function () {
     Route::delete('{id}/inventarios/categories/{categoryId}', [App\Http\Controllers\Org\InventoryCategoryController::class, 'destroy'])->name('categories.destroy');
     //Export Excel
     Route::get('{id}/inventarios/categories/export', [App\Http\Controllers\Org\InventoryCategoryController::class, 'export'])->name('categories.export');
-    
+
     Route::get('{id}/pagos', [App\Http\Controllers\Org\PaymentController::class, 'index'])->name('payments.index');
     Route::get('{id}/pagos/historial', [App\Http\Controllers\Org\PaymentController::class, 'history'])->name('payments.history');
     Route::get('{id}/pagos/servicios/{rut}', [App\Http\Controllers\Org\PaymentController::class, 'showServices'])->name('payments.services');
@@ -176,13 +179,13 @@ Route::prefix('org')->name('orgs.')->group(function () {
     //Export Excel
     Route::get('{id}/pagos/export', [App\Http\Controllers\Org\PaymentController::class, 'export'])->name('payments.export');
     Route::get('{id}/pagos/history/export', [App\Http\Controllers\Org\PaymentController::class, 'exportHistory'])->name('payments.history.export');
-    
+
     Route::get('{id}/notificaciones', [App\Http\Controllers\Org\NotificationController::class, 'index'])->name('notifications.index');
     Route::post('{id}/notificaciones', [App\Http\Controllers\Org\NotificationController::class, 'store'])->name('notifications.store');
-    
+
     Route::get('{id}/historyfolio/export', [App\Http\Controllers\Org\FolioController::class, 'export'])->name('historyfolio.export');
 
-}); 
+});
 
 // Billings routes
 Route::prefix('facturaciones')->name('billings.')->group(function () {
@@ -211,4 +214,4 @@ Route::prefix('ajax')->name('ajax.')->group(function () {
 Route::get('pos-integrado', function () {
     return view('pos-integrate');
 });
-    
+
