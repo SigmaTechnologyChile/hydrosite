@@ -156,7 +156,7 @@ class ReadingController extends Controller
 
     private function updateReading($org, $reading, $data)
     {
-        $tier = TierConfig::where('org_id', $org->id)->OrderBy('range_to', 'ASC')->get();
+        $tier = TierConfig::where('org_id', $org->id)->OrderBy('id', 'ASC')->get();
         $configCost = FixedCostConfig::where('org_id', $org->id)->first();
 
         $reading->previous_reading = $data['previous_reading'] ?? $reading->previous_reading;
@@ -289,7 +289,7 @@ class ReadingController extends Controller
         $reading = Reading::findOrFail($readingId);
         $reading->member = Member::findOrFail($reading->member_id);
         $reading->service = Service::findOrFail($reading->service_id);
-        $tier = TierConfig::where('org_id', $id)->OrderBy('range_to', 'ASC')->get();
+        $tier = TierConfig::where('org_id', $id)->OrderBy('id', 'ASC')->get();
         $configCost = FixedCostConfig::where('org_id', $org->id)->first();
         if ($tier->isEmpty()) {
             \Log::error("No se encontraron secciones para la organización con ID: {$id}");
