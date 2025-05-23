@@ -132,9 +132,9 @@
 
                             <div class="cta-container btn mx-auto mt-3 link-hover-fix">
                                 <div class="cta-highlight"></div>
-                                <a href="{{ route('register') }}" class="btn-get-started">
+                                <a href="tel:+56 9 3379 0083" class="btn-get-started">
                                     ¡Únete a nuestro equipo!
-                                    <i class="fas fa-users"></i> <!-- Icono de equipo -->
+                                    <i class="fas fa-users"></i>
                                 </a>
                                 <p class="cta-subtext" style="margin-top: 50px;"><strong>Juntos cuidamos cada
                                         gota</strong>: Regístrate y accede a herramientas profesionales para gestionar,
@@ -460,37 +460,36 @@
 </html>
 
 <style>
+    .about .icon-boxes {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0;
+        /* evita saltos entre columnas */
+    }
 
+    .about .icon-boxes>.col-md-6 {
+        display: flex;
+        flex-direction: column;
+    }
 
-.about .icon-boxes {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0; /* evita saltos entre columnas */
-}
+    .about .icon-box {
+        background-color: var(--surface-color);
+        padding: 50px 40px;
+        box-shadow: 0px 10px 50px rgba(0, 0, 0, 0.1);
+        border-radius: 10px;
+        transition: all 0.3s ease-out 0s;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+    }
 
-.about .icon-boxes > .col-md-6 {
-  display: flex;
-  flex-direction: column;
-}
+    .about .icon-boxes>.col-md-6 {
+        padding: 10px;
+    }
 
-.about .icon-box {
-  background-color: var(--surface-color);
-  padding: 50px 40px;
-  box-shadow: 0px 10px 50px rgba(0, 0, 0, 0.1);
-  border-radius: 10px;
-  transition: all 0.3s ease-out 0s;
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-}
-
-.about .icon-boxes > .col-md-6 {
-  padding: 10px;
-}
-
-.about .icon-boxes {
-  margin: -10px;
-}
+    .about .icon-boxes {
+        margin: -10px;
+    }
 
 
     .hero-content-wrapper h1 {
