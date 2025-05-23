@@ -460,6 +460,39 @@
 </html>
 
 <style>
+
+
+.about .icon-boxes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0; /* evita saltos entre columnas */
+}
+
+.about .icon-boxes > .col-md-6 {
+  display: flex;
+  flex-direction: column;
+}
+
+.about .icon-box {
+  background-color: var(--surface-color);
+  padding: 50px 40px;
+  box-shadow: 0px 10px 50px rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+  transition: all 0.3s ease-out 0s;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.about .icon-boxes > .col-md-6 {
+  padding: 10px;
+}
+
+.about .icon-boxes {
+  margin: -10px;
+}
+
+
     .hero-content-wrapper h1 {
         font-family: 'Montserrat', sans-serif;
         font-size: 2.2rem;
@@ -562,7 +595,9 @@
         .hero-content-wrapper h1 {
             font-size: 1.6rem;
         }
+
     }
+
 
     .icon-box i {
         display: inline-flex;
