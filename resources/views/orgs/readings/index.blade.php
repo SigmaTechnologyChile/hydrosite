@@ -141,6 +141,7 @@
                                                 data-bs-current="{{ $reading->current_reading }}"
                                                 data-bs-previous="{{ $reading->previous_reading }}"
                                                 data-bs-fines="{{ $reading->fines }}"
+                                                data-bs-other="{{ $reading->other }}"
                                                 data-bs-toggle="modal"
                                                 data-bs-target="#editReadingModal"
                                                 data-bs-placement="top"
@@ -156,7 +157,7 @@
                                 <div class="modal-dialog">
                                     <div class="modal-content">
                                         <div class="modal-header">
-                                            <h5 class="modal-title" id="editReadingModalLabel">Editar Lectura</h5>
+                                            <h5 class="modal-title" id="editReadingModalLabel">Editar Lectura N° <span id="idReadingModal"></span></h5>
                                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                         </div>
                                         <div class="modal-body">
@@ -183,7 +184,7 @@
                                                             type="checkbox"
                                                             id="cargo_corte_reposicion"
                                                             name="cargo_corte_reposicion"
-                                                            @if (isset($reading->fines) && intval($reading->fines) >= 10000) checked="checked" @endif>
+                                                          >
                                                         <label class="form-check-label" for="cargo_corte_reposicion">
                                                             Cargo Corte Reposición
                                                         </label>
@@ -192,8 +193,9 @@
                                                 </div>
                                                 <div class="mb-3">
                                                     <label for="other" class="form-label">Otros Cargos</label>
-                                                    <input type="number" class="form-control" id="other" name="other" value="0">
+                                                    <input type="number" class="form-control" id="other" name="other" value="{{ $reading->other }}">
                                                 </div>
+
                                                 <div class="mb-3">
                                                     <button type="submit" class="btn btn-success">Guardar Cambios</button>
                                                 </div>
@@ -285,7 +287,10 @@ document.addEventListener('DOMContentLoaded', function() {
         var currentReading = button.data('bs-current');
         var previousReading = button.data('bs-previous');
         var fines = button.data('bs-fines') || 0;
-
+        var other = button.data('bs-other');
+        document.getElementById('cargo_corte_reposicion').checked = fines >= 10000;
+        document.getElementById('other').value = other;
+        document.getElementById('idReadingModal').textContent = readingId;
         // Guardar los valores en localStorage para usar al actualizar
         localStorage.setItem('readingId', readingId);
         localStorage.setItem('currentReading', currentReading);
@@ -300,8 +305,6 @@ document.addEventListener('DOMContentLoaded', function() {
         modal.find('#current_reading').val(currentReading);
         modal.find('#previous_reading').val(previousReading);
         modal.find('#fines').val(fines);
-
-
 
     });
 
@@ -327,6 +330,9 @@ function openModal(readingId, currentReading) {
     console.log(currentReading);
     $('#editReadingModal').modal('show');
 }
+
+
+
 
 </script>
 @endsection
