@@ -74,7 +74,7 @@
             </div>
         </div>
 
-        
+
         <div class="row mb-2">
             <div class="col-md-6">
                 <div class="bg-primary text-white p-1 text-center fw-bold">
@@ -98,7 +98,7 @@
                     </tr>
                 </table>
             </div>
-            
+
             <div class="col-md-6">
                 <div class="bg-primary text-white p-1 text-center fw-bold">
                     Su detalle de consumo en Pesos ($)
@@ -128,17 +128,29 @@
                             @money($reading->s_previous)
                         </td>
                     </tr>
-                    <tr>
-                        <td>(+) Multas</td>
+                   <tr>
+                        <td>(+) Multas Vencidas</td>
                         <td class="text-end">
-                            @money($reading->fines)
+                            @money($reading->multas_vencidas)
                         </td>
-                    </tr>                    
-                    
+                    </tr>
+                    <tr>
+                        <td>(+) Otros Cargos</td>
+                        <td class="text-end">
+                            @money($reading->other)
+                        </td>
+                    </tr>
+                      <tr>
+                        <td>(+) Corte y Reposición</td>
+                        <td class="text-end">
+                            @money($reading->corte_reposicion)
+                        </td>
+                    </tr>
+
                 </table>
             </div>
         </div>
-        
+
         <div class="row mb-3">
             <div class="col-md-8">
                 <table class="table table-sm table-bordered mb-0 bg-light">
@@ -159,7 +171,7 @@
                                 <td class="text-end">@money($section->total)</td>
                             </tr>
                         @endforeach
-        
+
                         <tr>
                             <td class="text-end">Facturado</td>
                             <td class="text-end">{{ $reading->cm3 }}</td>
@@ -170,7 +182,7 @@
                 </table>
             </div>
         </div>
-        
+
         <div class="row justify-content-end">
             <div class="col-md-6">
                 <table class="table table-sm table-bordered">

@@ -140,15 +140,21 @@
                         </td>
                     </tr>
                     <tr>
-                        <td>(+) Multas</td>
+                        <td>(+) Multas Vencidas</td>
                         <td class="text-end">
-                            @money($reading->fines)
+                            @money($reading->multas_vencidas)
                         </td>
                     </tr>
-  <tr>
-                        <td>(+) Otros</td>
+                    <tr>
+                        <td>(+) Otros Cargos</td>
                         <td class="text-end">
                             @money($reading->other)
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>(+) Corte y Reposición</td>
+                        <td class="text-end">
+                            @money($reading->corte_reposicion)
                         </td>
                     </tr>
 

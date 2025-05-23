@@ -139,7 +139,7 @@ class ReadingController extends Controller
         $request->validate([
             'reading_id' => 'required|numeric',
             'current_reading' => 'required|numeric|min:0',
-            'fines' => 'nullable|numeric|min:0',
+            'multas_vencidas' => 'nullable|numeric|min:0',
         ]);
 
         try {
@@ -160,7 +160,7 @@ class ReadingController extends Controller
         $configCost = FixedCostConfig::where('org_id', $org->id)->first();
 
         $reading->previous_reading = $data['previous_reading'] ?? $reading->previous_reading;
-        $reading->current_reading = $data['current_reading']?  $data['current_reading']: 0;
+        $reading->current_reading = $data['current_reading'];
 
         $reading->cm3 = max(0, $reading->current_reading - $reading->previous_reading);
 
@@ -198,7 +198,7 @@ class ReadingController extends Controller
             $cantidad = min($restante, $limite - $anterior);
 
             if ($i === 0 && $subsidio != 0) {
-                $cantidadSubvencionada = min(13, $cantidad);
+                $cantidadSubvencionada = min($configCost->max_covered_m3, $cantidad);
                 $cantidadNormal = $cantidad - $cantidadSubvencionada;
                 $precioConSubsidio = $precio * (1 - $porcentaje_subsidio);// esto es el 0.4 o 0.6? es lo que se descuenta o el total, deverisa ser el descuento, osea el 0.4 el que se muestra
                 $consumo_agua_potable += $cantidadSubvencionada * $precioConSubsidio;
@@ -218,56 +218,24 @@ class ReadingController extends Controller
         $reading->v_subs = $subsidioDescuento;
 
 
-        $map = [
-            'cargo_mora' => 'late_fee_penalty',
-            'cargo_vencido' => 'expired_penalty',
-            'cargo_corte_reposicion' => 'replacement_penalty',
-        ];
-
-        // Obtener el valor de la multa desde la tabla readings (ya cargado en $reading)
-        $fines = $reading->fines; // Este valor es el total de las multas registradas
-
-        // Cargar el valor de la multa por corte/reposición desde la configuración
-        $replacementPenalty = DB::table('fixed_costs_config')->value('replacement_penalty');
-
-        // Si la multa de corte/reposición es de 10000 o más, se debe marcar automáticamente
-        $applyCutPenalty = $fines >= 10000;
-
-        // Inicializar el valor máximo de multa a aplicar
-        $maxFine = 0;
-
-        // Iterar sobre el mapa para aplicar las multas seleccionadas manualmente o por regla
-        foreach ($map as $key => $orgProperty) {
-            // Caso especial para corte/reposición
-            if ($key === 'cargo_corte_reposicion') {
-                if ($applyCutPenalty || isset($data[$key])) {
-                    $value = $replacementPenalty;
-                    if ($value > $maxFine) {
-                        $maxFine = $value;
-                    }
-                }
-            } else {
-                if (isset($data[$key])) {
-                    $value = $org->$orgProperty;
-                    if ($value > $maxFine) {
-                        $maxFine = $value;
-                    }
-                }
-            }
+        // Manejar las multas vencidas (800 o 1600)
+        $multas_vencidas = 0;
+        if (isset($data['cargo_mora'])) {
+            $multas_vencidas = max($multas_vencidas, $configCost->late_fee_penalty);
         }
-
-        // Guardar la multa máxima en la lectura
-        $reading->fines = $maxFine;
-        $reading->save(); // No olvides guardar si aún no lo haces
-
-
+        if (isset($data['cargo_vencido'])) {
+            $multas_vencidas = max($multas_vencidas, $configCost->expired_penalty);
+        }
+        $reading->multas_vencidas = $multas_vencidas;
 
 
+        $reading->corte_reposicion = isset($data['cargo_corte_reposicion']) ?
+            ($configCost->replacement_penalty) : 0;
         $reading->other = $data['other'] ?? $reading->other;
 
         $subtotal_consumo_mes = $consumo_agua_potable + $cargo_fijo;
         $reading->total_mounth = $subtotal_consumo_mes;
-        $subTotal = $subtotal_consumo_mes + $reading->fines + $reading->other + $reading->s_previous;
+        $subTotal = $subtotal_consumo_mes + $reading->multas_vencidas + $reading->other + $reading->s_previous;
         $reading->sub_total = $subTotal;
 
         if ($reading->invoice_type && $reading->invoice_type != "boleta") {
@@ -331,7 +299,7 @@ class ReadingController extends Controller
         }
 
         // Valores fijos
-         $cargo_fijo = $configCost->fixed_charge_penalty;
+        $cargo_fijo = $configCost->fixed_charge_penalty;
         $consumo_agua_potable = $reading->vc_water ?? 0; // Valor ya calculado con subsidio aplicado
         $subsidio_descuento = $reading->v_subs ?? 0; // Subsidio ya calculado
 
@@ -340,8 +308,13 @@ class ReadingController extends Controller
         // Verificando el subtotal
         \Log::info("Subtotal de consumo (sin IVA): " . $subtotal_consumo);
 
-          $subtotal_con_cargos = $subtotal_consumo + $reading->fines + ($reading->other ?? 0) + $reading->s_previous;
+        //  $subtotal_con_cargos = $subtotal_consumo + $reading->multas_vencidas + ($reading->other ?? 0) + $reading->s_previous;
 
+        $subtotal_con_cargos = $subtotal_consumo +
+            ($reading->multas_vencidas ?? 0) +
+            ($reading->corte_reposicion ?? 0) +
+            ($reading->other ?? 0) +
+            ($reading->s_previous ?? 0);
         // Definir el IVA solo si el tipo de documento es factura
         $iva = 0;
         $total_con_iva = $subtotal_con_cargos; // Inicializamos con el subtotal sin IVA

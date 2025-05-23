@@ -114,7 +114,7 @@
                                         <input type="number"
                                                name="current_reading"
                                                class="form-control form-control-sm current-reading-input"
-                                               value="{{ $reading->current_reading || null}}"
+                                               value="{{ $reading->current_reading}}"
                                                style="width: 80px; display: inline-block; text-align: right;"
                                                onkeydown="if(event.key==='Enter'){ this.form.submit(); }"
                                                data-row-index="{{ $loop->index }}">
@@ -140,7 +140,7 @@
                                                 data-bs-id="{{ $reading->id }}"
                                                 data-bs-current="{{ $reading->current_reading }}"
                                                 data-bs-previous="{{ $reading->previous_reading }}"
-                                                data-bs-fines="{{ $reading->fines }}"
+                                                data-bs-corte_reposicion="{{ $reading->corte_reposicion }}"
                                                 data-bs-other="{{ $reading->other }}"
                                                 data-bs-toggle="modal"
                                                 data-bs-target="#editReadingModal"
@@ -184,6 +184,7 @@
                                                             type="checkbox"
                                                             id="cargo_corte_reposicion"
                                                             name="cargo_corte_reposicion"
+                                                              @if (isset($reading->corte_reposicion) && intval($reading->corte_reposicion) > 0) checked="checked" @endif
                                                           >
                                                         <label class="form-check-label" for="cargo_corte_reposicion">
                                                             Cargo Corte Reposición
@@ -286,16 +287,16 @@ document.addEventListener('DOMContentLoaded', function() {
         var readingId = button.data('bs-id');
         var currentReading = button.data('bs-current');
         var previousReading = button.data('bs-previous');
-        var fines = button.data('bs-fines') || 0;
+        var corte_reposicion = button.data('bs-corte_reposicion') || 0;
         var other = button.data('bs-other');
-        document.getElementById('cargo_corte_reposicion').checked = fines >= 10000;
+        document.getElementById('cargo_corte_reposicion').checked = corte_reposicion > 0;
         document.getElementById('other').value = other;
         document.getElementById('idReadingModal').textContent = readingId;
         // Guardar los valores en localStorage para usar al actualizar
         localStorage.setItem('readingId', readingId);
         localStorage.setItem('currentReading', currentReading);
         localStorage.setItem('previousReading', previousReading);
-        localStorage.setItem('fines', fines);
+        localStorage.setItem('corte_reposicion', corte_reposicion);
 
         // Referenciar el modal
         var modal = $(this);
@@ -304,7 +305,7 @@ document.addEventListener('DOMContentLoaded', function() {
         modal.find('#reading_id').val(readingId);
         modal.find('#current_reading').val(currentReading);
         modal.find('#previous_reading').val(previousReading);
-        modal.find('#fines').val(fines);
+        modal.find('#corte_reposicion').val(corte_reposicion);
 
     });
 
@@ -319,7 +320,7 @@ document.addEventListener('DOMContentLoaded', function() {
         localStorage.removeItem('readingId');
         localStorage.removeItem('currentReading');
         localStorage.removeItem('previousReading');
-        localStorage.removeItem('fines');
+        localStorage.removeItem('corte_reposicion');
     });
 });
 
