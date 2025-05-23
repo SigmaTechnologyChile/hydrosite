@@ -107,6 +107,7 @@
                                 <td>{{ $reading->period }}</td>
                                 <td class="text-end"><span class="text-warning fw-bold">{{ $reading->previous_reading }}</span></td>
                                 <td class="text-end">
+                                     @if($reading->cm3 == 0)
                                     <form method="POST" action="{{ route('orgs.readings.current_reading_update', $org->id) }}"
                                           class="current-reading-form" data-reading-id="{{ $reading->id }}">
                                         @csrf
@@ -119,6 +120,15 @@
                                                onkeydown="if(event.key==='Enter'){ this.form.submit(); }"
                                                data-row-index="{{ $loop->index }}">
                                     </form>
+                                      @else
+                                       <input disabled readonly type="number"
+                                                name="current_reading"
+                                                class="form-control form-control-sm current-reading-input read-only"
+                                                value="{{ $reading->current_reading }}"
+                                                style="width: 80px; display: inline-block; text-align: right;"
+                                                onkeydown="if(event.key==='Enter'){ this.form.submit(); }"
+                                                data-row-index="{{ $loop->index }}">
+                                        @endif
                                 </td>
                                 <td class="text-end"><span class="text-primary fw-bold">{{ $reading->cm3 }}</span></td>
                                 <td class="text-end"><span class="text-danger fw-bold">= @money($reading->total)</span></td>
