@@ -2,6 +2,11 @@
 
 @section('content')
 <div class="container py-3" style="max-width: 800px;">
+        <div class="mb-3 d-print-none">
+        <a href="{{ route('orgs.readings.index', $org->id) }}" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> Volver a Lecturas
+        </a>
+    </div>
     <div class="border p-3 rounded shadow-sm bg-light">
         <div class="row">
             <!-- Logo  e información-->
