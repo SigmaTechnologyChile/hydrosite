@@ -160,7 +160,7 @@ class ReadingController extends Controller
         $configCost = FixedCostConfig::where('org_id', $org->id)->first();
 
         $reading->previous_reading = $data['previous_reading'] ?? $reading->previous_reading;
-        $reading->current_reading = $data['current_reading'];
+        $reading->current_reading = $data['current_reading']?  $data['current_reading']: 0;
 
         $reading->cm3 = max(0, $reading->current_reading - $reading->previous_reading);
 

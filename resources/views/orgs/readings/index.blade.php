@@ -114,7 +114,7 @@
                                         <input type="number"
                                                name="current_reading"
                                                class="form-control form-control-sm current-reading-input"
-                                               value="{{ $reading->current_reading }}"
+                                               value="{{ $reading->current_reading || null}}"
                                                style="width: 80px; display: inline-block; text-align: right;"
                                                onkeydown="if(event.key==='Enter'){ this.form.submit(); }"
                                                data-row-index="{{ $loop->index }}">
