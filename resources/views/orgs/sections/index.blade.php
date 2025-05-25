@@ -91,7 +91,7 @@
                                     <td>{{$tier->range_to}}</td>
                                     <td>{{$tier->value}}</td>
                                     <td class="text-center">
-                                        <div class="d-flex justify-content-center">
+                                        <div class="d-flex justify-content-end">
                                        <a href="{{ route('orgs.sections.edit', ['id' => $org->id, 'tramoId' => $tier->id]) }}"
                                             class="btn btn-sm btn-success me-2"
                                             data-bs-toggle="tooltip"
