@@ -101,74 +101,33 @@ class SectionController extends Controller
         return view('orgs.sections.edit', compact('org', 'tier'));
     }
 
-
-
-    // public function update(Request $request, $orgId, $tierId)
-    // {
-    //     $tier = TierConfig::where('org_id', $orgId)->findOrFail($tierId);
-    //     $request->validate([
-    //         'tier_name' => 'required|string|max:255',
-    //         'range_from' => 'required|numeric',
-    //         'range_to' => 'required|numeric|gt:range_from',
-    //         'value' => 'required|numeric|min:0',
-    //     ]);
-
-    //     // Verificar solapamiento con otros tramos
-    //     $exists = TierConfig::where('org_id', $orgId)
-    //         ->where('id', '!=', $tier->id)
-    //         ->where(function ($query) use ($request) {
-    //             $query->whereBetween('range_from', [$request->range_from, $request->range_to])
-    //                 ->orWhereBetween('range_to', [$request->range_from, $request->range_to])
-    //                 ->orWhere(function ($query2) use ($request) {
-    //                     $query2->where('range_from', '<=', $request->range_from)
-    //                         ->where('range_to', '>=', $request->range_to);
-    //                 });
-    //         })
-    //         ->exists();
-
-    //     if ($exists) {
-    //         return redirect()->back()
-    //             ->withInput()
-    //             ->withErrors(['range_from' => 'El tramo se solapa con otro existente.']);
-    //     }
-
-    //     $tier->update([
-    //         'tier_name' => $request->tier_name,
-    //         'range_from' => $request->range_from,
-    //         'range_to' => $request->range_to,
-    //         'value' => $request->value,
-    //     ]);
-
-    //     return redirect()->route('orgs.sections.index', $orgId)
-    //         ->with('success', 'Tramo actualizado correctamente.');
-    // }
-
-
-public function update(Request $request, $orgId, $tramoId)
-{
-   // dd($request->all());
-    $tier = TierConfig::where('org_id', $orgId)->where('id', $tramoId)->firstOrFail();
-
-    $tier->update($request->only([
-        'tier_name', 'range_from', 'range_to', 'value'
-    ]));
-
-   // return redirect()->route('orgs.sections.edit', [$orgId])->with('success', 'Tramo actualizado');
-    return redirect()->route('orgs.sections.edit', [$orgId, $tramoId])
-    ->with('success', 'Tramo actualizado');
-}
-
-
-
-    public function destroy($orgId, $tramoId)
+    public function update(Request $request, $orgId, $tramoId)
     {
-        $tier = TierConfig::findOrFail($tramoId);
-        $tier->delete();
+        // dd($request->all());
+        $tier = TierConfig::where('org_id', $orgId)->where('id', $tramoId)->firstOrFail();
 
-        return redirect()->route('sections.index', $orgId)
-            ->with('success', 'Tramo eliminado correctamente.');
+        $tier->update($request->only([
+            'tier_name',
+            'range_from',
+            'range_to',
+            'value'
+        ]));
+
+        // return redirect()->route('orgs.sections.edit', [$orgId])->with('success', 'Tramo actualizado');
+        return redirect()->route('orgs.sections.edit', [$orgId, $tramoId])
+            ->with('success', 'Tramo actualizado');
     }
 
+
+
+public function destroy($orgId, $tramoId)
+{
+    $tier = TierConfig::where('org_id', $orgId)->where('id', $tramoId)->firstOrFail();
+    $tier->delete();
+
+    return redirect()->route('orgs.sections.index', $orgId)
+        ->with('success', 'Tramo eliminado correctamente.');
+}
 
     /*Export Excel*/
 

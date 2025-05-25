@@ -116,7 +116,7 @@ Route::prefix('org')->name('orgs.')->group(function () {
     Route::get('{id}/tramos/nuevo', [App\Http\Controllers\Org\SectionController::class, 'create'])->name('sections.create');
     Route::get('{id}/tramos/{tramoId}/editar', [App\Http\Controllers\Org\SectionController::class, 'edit'])->name('sections.edit');
     Route::put('{id}/tramos/{tramoId}', [App\Http\Controllers\Org\SectionController::class, 'update'])->name('sections.update');
-
+   Route::delete('{id}/tramos/{tramoId}', [App\Http\Controllers\Org\SectionController::class, 'destroy'])->name('sections.destroy');
 Route::post('{id}/tramos/store-tier', [App\Http\Controllers\Org\SectionController::class, 'storeTier'])->name('sections.storeTier'); // para tramos (tier_config)
 Route::post('{id}/tramos/store-fixed-cost', [App\Http\Controllers\Org\SectionController::class, 'storeFixedCost'])->name('sections.storeFixedCost'); // para fixed cost config
 

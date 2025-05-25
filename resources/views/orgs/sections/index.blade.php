@@ -98,7 +98,13 @@
                                             class="btn btn-sm btn-success">
                                             <i class="bi bi-pencil-square me-1"></i> Editar
                                         </a>
+                                        <a href="{{ route('orgs.sections.destroy', ['id' => $org->id, 'tramoId' => $tier->id]) }}"
+                                        class="btn btn-sm btn-danger delete-tier"
+                                        data-tier-name="{{ $tier->tier_name }}">
+                                            <i class="bi bi-trash me-1"></i> Eliminar
+                                        </a>
                                     </td>
+
                                 </tr>
                             @endforeach
                         </tbody>
@@ -109,3 +115,71 @@
         {{ $tiers->links('pagination::bootstrap-4') }}
     </section>
 @endsection
+
+@section('js')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Manejar eliminación de tramos con SweetAlert
+    const deleteButtons = document.querySelectorAll('.delete-tier');
+
+    deleteButtons.forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+
+            const url = this.getAttribute('href');
+            const tierName = this.getAttribute('data-tier-name');
+
+            Swal.fire({
+                title: '¿Estás seguro?',
+                text: `¿Deseas eliminar el tramo "${tierName}"? Esta acción no se puede deshacer.`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Sí, eliminar',
+                cancelButtonText: 'Cancelar',
+                reverseButtons: true
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Crear formulario dinámicamente para enviar DELETE
+                    const form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = url;
+
+                    // Token CSRF
+                    const csrfToken = document.createElement('input');
+                    csrfToken.type = 'hidden';
+                    csrfToken.name = '_token';
+                    csrfToken.value = '{{ csrf_token() }}';
+                    form.appendChild(csrfToken);
+
+                    // Method DELETE
+                    const methodInput = document.createElement('input');
+                    methodInput.type = 'hidden';
+                    methodInput.name = '_method';
+                    methodInput.value = 'DELETE';
+                    form.appendChild(methodInput);
+
+                    // Agregar al DOM y enviar
+                    document.body.appendChild(form);
+                    form.submit();
+                }
+            });
+        });
+    });
+});
+</script>
+@endsection
+@if(session('success'))
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        Swal.fire({
+            title: '¡Éxito!',
+            text: '{{ session('success') }}',
+            icon: 'success',
+            timer: 3000,
+            showConfirmButton: false
+        });
+    });
+</script>
+@endif
