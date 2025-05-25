@@ -44,7 +44,7 @@
                                 placeholder="Ingresa el valor corte y reposición">
                         </div>
                         <div class="col-md-1">
-                            <label for="max_covered_m3" class="form-label">Máximo m³ cubierto</label>
+                            <label for="max_covered_m3" class="form-label">M³ cubre subsidio</label>
                             <input type="number" step="0" name="max_covered_m3" id="max_covered_m3" class="form-control"
                                 value="{{ old('max_covered_m3', $fixedCostConfig->max_covered_m3) }}"
                                 placeholder="Ingresa el max. m3 del subsidio">
@@ -71,10 +71,10 @@
             </div>
             <div class="card-body">
                 <div class="table-responsive">
-                    <table class="table table-hover align-middle">
-                        <thead class="table-light">
-                            <tr>
-                                <th scope="col">#</th>
+                    <table class="table table-borderless">
+                        <thead>
+                            <tr class="table-light">
+                                <th scope="col">ID</th>
                                 <th scope="col">Tramo</th>
                                 <th scope="col">Desde</th>
                                 <th scope="col">Hasta</th>
@@ -82,27 +82,32 @@
                                 <th scope="col" class="text-center">Acciones</th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody class="table-group-divider">
                             @foreach($tiers as $tier)
                                 <tr data-id="{{ $tier->id }}">
                                     <td>{{ $tier->id }}</td>
                                     <td>{{ $tier->tier_name}}</td>
-                                    <td><input class="form-text" type="number" name="range_from" value="{{$tier->range_from}}"
-                                            readonly></td>
-                                    <td><input class="form-text" type="number" name="range_to" value="{{$tier->range_to}}"
-                                            readonly></td>
-                                    <td><input class="form-text" type="number" name="value" value="{{$tier->value}}" readonly>
-                                    </td>
+                                    <td>{{$tier->range_from}}</td>
+                                    <td>{{$tier->range_to}}</td>
+                                    <td>{{$tier->value}}</td>
                                     <td class="text-center">
+                                        <div class="d-flex justify-content-center">
                                        <a href="{{ route('orgs.sections.edit', ['id' => $org->id, 'tramoId' => $tier->id]) }}"
-                                            class="btn btn-sm btn-success">
+                                            class="btn btn-sm btn-success me-2"
+                                            data-bs-toggle="tooltip"
+                                            data-bs-placement="top"
+                                            title="Editar">
                                             <i class="bi bi-pencil-square me-1"></i> Editar
                                         </a>
                                         <a href="{{ route('orgs.sections.destroy', ['id' => $org->id, 'tramoId' => $tier->id]) }}"
                                         class="btn btn-sm btn-danger delete-tier"
-                                        data-tier-name="{{ $tier->tier_name }}">
+                                        data-bs-toggle="tooltip"
+                                        data-bs-placement="top"
+                                        data-tier-name="{{ $tier->tier_name }}"
+                                        title="Eliminar">
                                             <i class="bi bi-trash me-1"></i> Eliminar
                                         </a>
+                                        </div>
                                     </td>
 
                                 </tr>
