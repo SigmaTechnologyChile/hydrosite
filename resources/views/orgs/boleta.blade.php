@@ -72,7 +72,12 @@
                     </tr>
                     <tr>
                         <td class="fw-bold">MIDEPLAN</td>
-                        <td>{{ $reading->service->mideplan ?? '0' }}</td>
+                       @if ($reading->service->meter_plan && $reading->service->meter_plan == 1  )
+                         <td> Sí  </td>
+                        @else
+                     <td>  No </td>
+                    @endif
+
                     </tr>
                     <tr>
                         <td class="fw-bold">DIÁMETRO</td>
@@ -124,7 +129,12 @@
                         <td class="text-end">@money($reading->vc_water)</td>
                     </tr>
                     <tr>
-                        <td>(-) Subsidio 50% Tope 13 M3</td>
+                        <td>(-) Subsidio  @if ($reading->service->percentage && $reading->service->percentage != 0  )
+                         {{ $reading->service->percentage }}%
+                        @else
+                    0%
+                    @endif
+                      Tope {{ $configCost->max_covered_m3 }} M3</td>
                         <td class="text-end">
                             @money(isset($reading->v_subs) && is_numeric($reading->v_subs) ? $reading->v_subs : 0, 'CLP')
                         </td>
