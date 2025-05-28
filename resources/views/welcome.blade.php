@@ -132,8 +132,8 @@
 
                             <div class="cta-container btn mx-auto mt-3 link-hover-fix">
                                 <div class="cta-highlight"></div>
-                                <a href="tel:+56 9 3379 0083" class="btn-get-started">
-                                    ¡Únete a nuestro equipo!
+                                <a href="tel:+56 9 5246 8967" class="btn-get-started">
+                                    ¡Llamanos ahora!
                                     <i class="fas fa-users"></i>
                                 </a>
                                 <p class="cta-subtext" style="margin-top: 50px;"><strong>Juntos cuidamos cada
