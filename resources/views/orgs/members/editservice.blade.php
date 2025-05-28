@@ -39,7 +39,7 @@
                                 <select class="form-select @error('sector') is-invalid @enderror" id="sector" name="sector">
                                     <option value="">Seleccione el sector</option>
                                     @foreach($sectors as $sector)  <!-- Reemplazamos el array estático por los sectores dinámicos -->
-                                        <option value="{{ $sector->id }}" 
+                                        <option value="{{ $sector->id }}"
                                             {{ old('sector', $service->sector_id) == $sector->id ? 'selected' : '' }}>
                                             {{ $sector->name }}  <!-- Ajusta 'name' al campo adecuado de tu modelo Sector -->
                                         </option>
@@ -49,13 +49,13 @@
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
-                            
+
                             <div class="col-md-6">
                                 <label for="meter_plan" class="form-label">MIDEPLAN</label>
                                 <select class="form-select @error('meter_plan') is-invalid @enderror" id="meter_plan" name="meter_plan">
                                     <option value="">Seleccione</option>
-                                    <option value="si" {{ old('meter_plan', $service->meter_plan) == 'si' ? 'selected' : '' }}>Sí</option>
-                                    <option value="no" {{ old('meter_plan', $service->meter_plan) == 'no' ? 'selected' : '' }}>No</option>
+                                    <option value="1" {{ old('meter_plan', $service->meter_plan) == 1 ? 'selected' : '' }}>Sí</option>
+                                    <option value="0" {{ old('meter_plan', $service->meter_plan) == 0 ? 'selected' : '' }}>No</option>
                                 </select>
                                 @error('meter_plan')
                                     <div class="invalid-feedback">{{ $message }}</div>
@@ -116,17 +116,17 @@
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
-                            
+
                             <div class="col-md-12 text-center mt-4">
                                 <label for="active" class="form-label d-block">¿Servicio Activo?</label>
-                                
+
                                 <div class="form-check form-switch d-inline-flex align-items-center">
                                     <input class="form-check-input" type="checkbox" id="active" name="active" value="1" {{ old('active', $service->active) ? 'checked' : '' }}>
                                     <label class="form-check-label ms-2" for="active">
                                         <span id="active-label">{{ old('active', $service->active) ? 'Sí' : 'No' }}</span>
                                     </label>
                                 </div>
-                                  
+
                                 @error('active')
                                     <div class="text-danger">{{ $message }}</div>
                                 @enderror
@@ -153,9 +153,9 @@ document.addEventListener('DOMContentLoaded', function() {
     const meterPlanSelect = document.getElementById('meter_plan');
     const percentageLabel = document.querySelector('label[for="percentage"]');  // Seleccionamos la etiqueta de porcentaje
     const percentageInput = document.getElementById('percentage');
-    
+
     function togglePercentageField() {
-        if (meterPlanSelect.value === 'no') {
+        if (meterPlanSelect.value === "0") {
             percentageInput.disabled = true; // Deshabilitar el campo de porcentaje
             percentageInput.value = ''; // Limpiar el valor si está deshabilitado
         } else {
@@ -165,11 +165,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
     meterPlanSelect.addEventListener('change', togglePercentageField);
     togglePercentageField(); // Inicializar el estado del campo porcentaje
-    
+
     function updatePercentageField() {
         // Obtener el contenedor actual
-        const isMideplanEnabled = meterPlanSelect.value === 'si';
-        
+        const isMideplanEnabled = meterPlanSelect.value === "1";
+
         // Reconstruir el campo según el estado de MIDEPLAN
         if (isMideplanEnabled) {
             // Campo habilitado
@@ -181,19 +181,19 @@ document.addEventListener('DOMContentLoaded', function() {
             percentageInput.setAttribute('step', '0');
         }
     }
-    
+
     // Establecer el estado inicial
     updatePercentageField();
-    
+
     // Escuchar cambios
     if (meterPlanSelect) {
         meterPlanSelect.addEventListener('change', updatePercentageField);
     }
-    
+
     // Código para el checkbox de activo
     const activeCheckbox = document.getElementById('active');
     const activeLabel = document.getElementById('active-label');
-    
+
     if (activeCheckbox && activeLabel) {
         activeCheckbox.addEventListener('change', function() {
             activeLabel.textContent = this.checked ? 'Sí' : 'No';

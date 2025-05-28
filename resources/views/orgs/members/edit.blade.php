@@ -25,7 +25,7 @@
                     <div class="col-md-6">
                         <div class="mb-3">
                             <label for="rut" class="form-label">RUT</label>
-                            <input type="text" class="form-control @error('rut') is-invalid @enderror" id="rut" name="rut" value="{{ old('rut', $member->rut) }}" required disabled>
+                            <input type="text" class="form-control @error('rut') is-invalid @enderror" id="rut" name="rut" value="{{ old('rut', $member->rut) }}" required readonly>
                             @error('rut')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
@@ -51,6 +51,28 @@
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
+                          <!-- NUEVO: Email -->
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Correo electrónico</label>
+                        <input type="email" class="form-control @error('email') is-invalid @enderror" id="email" name="email" value="{{ old('email', $member->email) }}" required>
+                        @error('email')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+                     <div class="mb-3 d-none">
+                            <label for="city" class="form-label">Comuna</label>
+                            <select class="form-select" id="city" name="city">
+                                @if($city)
+                                <option value="{{$city->id}}">{{$city->name_city}}</option>
+                                @endif
+                            </select>
+                            @error('city')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                    <!-- NUEVO: Género -->
+                    
                     </div>
                     <div class="col-md-6">
                         <div class="mb-3">
@@ -64,7 +86,7 @@
                             @error('state')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
-                        </div>                        
+                        </div>
                         <div class="mb-3">
                             <label for="province" class="form-label">Provincia</label>
                             <select class="form-select" id="province" name="province">
@@ -76,17 +98,34 @@
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
-                        <div class="mb-3">
-                            <label for="city" class="form-label">Comuna</label>
-                            <select class="form-select" id="city" name="city">
-                                @if($city)
-                                <option value="{{$city->id}}">{{$city->name_city}}</option>
-                                @endif
-                            </select>
-                            @error('city')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
+                         <div class="mb-3">
+                        <label for="mobilephone" class="form-label">Número de celular</label>
+                        <input type="text" maxlength="15" class="form-control @error('mobilephone') is-invalid @enderror" id="mobilephone" name="mobilephone" value="{{ old('mobilephone', $member->mobile_phone) }}" required>
+                        @error('mobilephone')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+
+                    <!-- NUEVO: Teléfono fijo -->
+                    <div class="mb-3">
+                        <label for="phone" class="form-label">Número de teléfono</label>
+                        <input type="text" maxlength="15" class="form-control @error('phone') is-invalid @enderror" id="phone" name="phone" value="{{ old('phone', $member->phone) }}" required>
+                        @error('phone')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+                    <div class="mb-3">
+                        <label for="gender" class="form-label">Género</label>
+                        <select class="form-select @error('gender') is-invalid @enderror" id="gender" name="gender" required>
+                            <option value="">Seleccionar género</option>
+                            <option value="MASCULINO" {{ old('gender', $member->gender) == 'MASCULINO' ? 'selected' : '' }}>Hombre</option>
+                            <option value="FEMENINO" {{ old('gender', $member->gender) == 'FEMENINO' ? 'selected' : '' }}>Mujer</option>
+                            <option value="OTRO" {{ old('gender', $member->gender) == 'OTRO' ? 'selected' : '' }}>Otro</option>
+                        </select>
+                        @error('gender')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
 
                     </div>
                 </div>
@@ -169,20 +208,22 @@
                     $('#city').empty();
                     $('#province').append('<option value="">Seleccionar Provincia</option>');
                     resultado.forEach(function(key,index){
-                       $('#province').append('<option value="'+key.id+'">'+key.name_province+'</option>'); 
+                       $('#province').append('<option value="'+key.id+'">'+key.name_province+'</option>');
                     });
                   }
                 });
           });
         });
-        
+
         $(function(){
           $("#province").change(function(e){
             var id ="";
               if ($("#province").val() !=null){
                 id = $("#province").val();
               }
-              $.ajax({
+              
+          });
+                        $.ajax({
                   url: "/ajax/"+id+"/comunas",
                   type: "get",
                   dataType: "json",
@@ -194,11 +235,10 @@
                     $('#city').empty();
                     $('#city').append('<option value="">Seleccionar Comuna</option>');
                     resultado.forEach(function(key,index){
-                       $('#city').append('<option value="'+key.id+'">'+key.name_city+'</option>'); 
+                       $('#city').append('<option value="'+key.id+'">'+key.name_city+'</option>');
                     });
                   }
                 });
-          });
         });
     </script>
 @endsection

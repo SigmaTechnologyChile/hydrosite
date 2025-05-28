@@ -15,7 +15,7 @@
     </div><!-- End Page Title -->
 
     <section class="section dashboard">
-        
+
         <div class="card top-selling overflow-auto">
 <div class="card-body pt-2">
                 <form method="GET" id="filterForm">
@@ -38,7 +38,7 @@
                                     @endif
                                 </select>
                             </div>
-    
+
                             <!-- Buscador -->
                             <div class="col-md-4">
                                 <label class="form-label fw-semibold">Buscar</label>
@@ -49,7 +49,7 @@
                                     <input type="text" name="search" class="form-control rounded-end-3" placeholder="Buscar por nombre, apellido, sector" value="{{ request('search') }}">
                                 </div>
                             </div>
-    
+
                             <!-- Botón Filtrar -->
                             <div class="col-md-2 d-flex">
                                 <button type="submit" class="btn btn-primary w-100 rounded-pill pulse-btn">
@@ -65,7 +65,7 @@
                     </form>
             </div>
             <div class="card-body">
-                <div class="table-responsive">
+                <div class="table-responsive" style="padding-bottom: 11rem!important">
                     <table class="table table-hover align-middle">
                         <thead class="table-light">
                             <tr>
@@ -118,7 +118,7 @@
                         </tbody>
                     </table>
                 </div>
-                
+
                 <div class="mt-4">
                     {!! $members->render('pagination::bootstrap-4') !!}
                 </div>
@@ -166,7 +166,7 @@
                                     <input type="tel" class="form-control" id="telefono" name="phone">
                                 </div>
                             </div>
-                            
+
                             <!-- Columna derecha - Servicios -->
                             <div class="col-md-6 ps-md-4">
                                 <h6 class="text-primary mb-3">Información de Servicios <span class="text-muted fs-6 fw-normal"></span></h6>
@@ -229,7 +229,7 @@
                                 </div>
                             </div>
                         </div>
-                        
+
                         <div class="d-grid gap-2 mt-4">
                             <button type="submit" class="btn btn-primary">Añadir cliente</button>
                         </div>
@@ -249,19 +249,19 @@
         align-items: center;
         justify-content: center;
     }
-    
+
     .bg-light-primary {
         background-color: rgba(var(--bs-primary-rgb), 0.1);
     }
-    
+
     .table > :not(caption) > * > * {
         padding: 0.75rem 1rem;
     }
-    
+
     .search-container {
         margin-bottom: 1.5rem;
     }
-    
+
     @media (max-width: 767.98px) {
         .table-responsive {
             border: 0;
@@ -304,24 +304,24 @@
             padding-bottom: 1.5rem;
             margin-bottom: 1.5rem;
         }
-        
+
         .modal-body .ps-md-4 {
             padding-left: 0 !important;
         }
-        
+
         .modal-body .pe-md-4 {
             padding-right: 0 !important;
         }
     }
-    
+
     .modal-xl {
         max-width: 1140px;
     }
-    
+
     textarea.form-control {
         min-height: 100px;
     }
-    
+
     .text-primary {
         color: var(--bs-primary) !important;
     }
@@ -335,7 +335,7 @@
         if (form) {
             form.addEventListener('submit', function(event) {
                 event.preventDefault();
-                
+
                 alert('Formulario enviado correctamente');
                 const modal = bootstrap.Modal.getInstance(document.getElementById('newMemberModal'));
                 modal.hide();

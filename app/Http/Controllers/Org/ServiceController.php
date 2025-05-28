@@ -70,7 +70,7 @@ class ServiceController extends Controller
        
         $validator = Validator::make($request->all(), [
             'locality_id' => 'required|integer',
-            'meter_plan' => 'required|in:si,no',
+            'meter_plan' => 'required',
             'meter_type' => 'required|in:analogico,digital',
             'meter_number' => 'required|string|max:20',
             'invoice_type' => 'required|in:boleta,factura',
@@ -85,7 +85,7 @@ class ServiceController extends Controller
             return redirect()->back()->withErrors($validator)->withInput();
         }
         // Lógica personalizada para validar 'percentage' solo cuando 'meter_plan' es 'si'
-        if ($request->meter_plan == 'si') {
+        if ($request->meter_plan == '1') {
             // Si 'meter_plan' es 'si', validar que 'percentage' sea requerido
             $validator->addRules(['percentage' => 'required|numeric|min:0|max:100']);
     
