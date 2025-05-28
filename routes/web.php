@@ -209,6 +209,9 @@ Route::prefix('ajax')->name('ajax.')->group(function () {
     Route::get('regiones', [App\Http\Controllers\AjaxController::class, 'state']);
     Route::get('{id}/provincias', [App\Http\Controllers\AjaxController::class, 'provinces']);
     Route::get('{id}/comunas', [App\Http\Controllers\AjaxController::class, 'cities']);
+
+    // Nueva ruta para comunas por región (sin provincia)
+    Route::get('{stateId}/comunas-por-region', [App\Http\Controllers\AjaxController::class, 'citiesByState']);
 });
 
 Route::get('pos-integrado', function () {
