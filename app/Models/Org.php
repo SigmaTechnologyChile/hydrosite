@@ -17,7 +17,6 @@ class Org extends Model
         'state_id',
         'city_id',
         'state',
-        'province',
         'commune',
         'name',
         'born_year',

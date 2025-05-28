@@ -243,31 +243,6 @@ class MemberController extends Controller
         return redirect()->route('orgs.members.index', $org->id)->with('success', 'Socio creado correctamente.');
     }
 
-    private function saveServiceData($memberId, Request $request, $validated)
-    {
-
-        $lastService = Service::where('member_id', $memberId)
-            ->where('org_id', $orgId)
-            ->orderBy('nro', 'desc')
-            ->first();
-
-        $newNro = $lastService ? $lastService->nro + 1 : 1;
-
-        // Crear un nuevo registro de servicio solo si el miembro está activo
-        $service               = new MemberService();
-        $service->member_id    = $memberId;
-        $service->org_id       = $orgId;
-        $service->meter_plan   = $validated[meter_plan];
-        $service->percentage   = $validated['meter_plan'] == 1 ? ($validated['percentage'] ?? 0) : 0;
-        $service->meter_type   = $request->meter_type;
-        $service->meter_number = $request->meter_number;
-        $service->invoice_type = $request->invoice_type;
-        $service->diameter     = $request->diameter;
-        $service->partner      = $request->input('partner', 'cliente');
-        $service->observations = $validated['observations'] ?? '';
-        $service->nro          = $newNro;
-        $service->save();
-    }
 
     public function dashboard($id)
     {
@@ -338,23 +313,6 @@ public function edit($orgId, $memberId)
 
     }
 
-    private function updateServiceData($memberId, Request $request)
-    {
-
-        $service = Service::where('member_id', $memberId)->first();
-
-        if ($service) {
-            $service->sector       = $request->input('sector');
-            $service->meter_plan   = $request->input('meter_plan');
-            $service->percentage   = $request->input('percentage');
-            $service->meter_type   = $request->input('meter_type');
-            $service->meter_number = $request->input('meter_number');
-            $service->invoice_type = $request->input('invoice_type');
-            $service->diameter     = $request->input('diameter');
-            $service->observations = $request->input('observations');
-            $service->save();
-        }
-    }
 
     public function transferService(Request $request, $orgId, $memberId, $serviceId)
     {

@@ -44,7 +44,7 @@
                             <i class="bi bi-box-arrow-right me-2"></i>Exportar
                         </a>
                     </div>
-                </div>                
+                </div>
             </div>
             <div class="card-body">
                 <div class="table-responsive">
@@ -54,13 +54,12 @@
                                 <th scope="col">ID</th>
                                 <th scope="col">Sector</th>
                                 <th scope="col">Comuna</th>
-                                <th scope="col">Provincia</th>
                                 <th scope="col">Región</th>
                                 <th scope="col" class="text-center">Acciones</th>
                             </tr>
                         </thead>
                         <tbody>
-                           @foreach($locations as $location) 
+                           @foreach($locations as $location)
                             <tr>
                                 <td>{{ $location->id }}</td>
                                 <td>
@@ -72,7 +71,6 @@
                                     </div>
                                 </td>
                                 <td>{{$location->name_city}}</td>
-                                <td>{{$location->name_province}}</td>
                                 <td>{{$location->name_state}}</td>
                                 <td class="text-center">
                                     <button type="button" class="btn btn-secondary btn-sm" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-original-title="Tooltip on top"><i class="bi bi-collection"></i></button>
@@ -82,14 +80,14 @@
                                     <button type="button" class="btn btn-info btn-sm" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-original-title="Tooltip on top"><i class="bi bi-info-circle"></i></button>
                                     <button type="button" class="btn btn-dark btn-sm" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-original-title="Tooltip on top"><i class="bi bi-folder"></i></button>
                                     <a href="{{ route('orgs.locations.edit', [$org->id, $location->id]) }}" class="btn btn-primary btn-sm" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-original-title="Editar"><i class="bi bi-pencil"></i></a>
-                                
+
                                 </td>
                             </tr>
                           @endforeach
                         </tbody>
                     </table>
                 </div>
-                
+
                 <div class="mt-4">
                     {!! $locations->render('pagination::bootstrap-4') !!}
                 </div>

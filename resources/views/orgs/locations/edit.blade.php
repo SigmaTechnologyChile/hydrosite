@@ -40,14 +40,6 @@
                     </div>
                 </div>
 
-                <!-- Provincia (preestablecida) -->
-                <div class="col-md-6">
-                    <div class="form-floating">
-                        <input type="text" class="form-control" value="Curicó" readonly>
-                        <label><i class="bi bi-map-fill me-2"></i>Provincia</label>
-                        <input type="hidden" name="province_id" value="{{ $location->province_id }}">
-                    </div>
-                </div>
 
                 <div class="col-md-6">
                     <div class="form-floating">

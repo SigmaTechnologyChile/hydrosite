@@ -220,33 +220,48 @@
     <script>
 
         $(document).ready(function () {
-            // Cuando cambie la región, cargar las comunas
-            $("#state").change(function (e) {
-                var stateId = $(this).val();
+$.ajaxSetup({
+        headers: {
+            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+        }
+    });
 
-                // Limpiar el selector de comunas
-                $('#commune').empty();
-                $('#commune').append('<option value="">Seleccionar Comuna</option>');
+    $("#state").change(function (e) {
+        var stateId = $(this).val();
 
-                if (stateId) {
-                    $.ajax({
-                        url: "/ajax/" + stateId + "/comunas-por-region", // Nueva ruta
-                        type: "GET",
-                        dataType: "json",
-                        data: {
-                            'state_id': stateId,
-                        },
-                        success: function (resultado) {
-                            resultado.forEach(function (comuna) {
-                                $('#commune').append('<option value="' + comuna.name + '">' + comuna.name + '</option>');
-                            });
-                        },
-                        error: function () {
-                            console.log('Error al cargar comunas');
-                        }
+        $('#commune').empty();
+        $('#commune').append('<option value="">Seleccionar Comuna</option>');
+
+        if (stateId) {
+            $.ajax({
+                url: "{{ url('/ajax') }}/" + stateId + "/comunas-por-region",
+                type: "GET",
+                dataType: "json",
+                beforeSend: function() {
+                    $('#commune').prop('disabled', true);
+                },
+                success: function (resultado) {
+                    if (resultado && resultado.length > 0) {
+                        resultado.forEach(function (comuna) {
+                            $('#commune').append('<option value="' + comuna.name + '">' + comuna.name + '</option>');
+                        });
+                    }
+                    $('#commune').prop('disabled', false);
+                },
+                error: function (xhr, status, error) {
+                    console.error('Error al cargar comunas:', {
+                        status: status,
+                        error: error,
+                        response: xhr.responseText,
+                        url: "{{ url('/ajax') }}/" + stateId + "/comunas-por-region"
                     });
+                    $('#commune').prop('disabled', false);
+                    alert('Error al cargar las comunas. Por favor, recarga la página.');
                 }
             });
+        }
+    });
+
         });
     </script>
 @endsection

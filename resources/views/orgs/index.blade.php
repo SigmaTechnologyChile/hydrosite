@@ -40,7 +40,7 @@
                                     <span class="rut-value">{{$org->rut}}</span>
                                 </div>
                             </div>
-                            
+
                             <div class="org-card-body">
                                 <div class="org-icon-container">
                                     <div class="org-icon">
@@ -50,23 +50,22 @@
                                     <div class="org-status-ring" aria-hidden="true"></div>
                                     @endif
                                 </div>
-                                
+
                                 <div class="org-info">
                                     <div class="org-names">
                                         <h2 class="org-fantasy-name" title="{{$org->fantasy_name}}">{{$org->fantasy_name}}</h2>
                                         <h3 class="org-name" title="{{$org->name}}">{{$org->name}}</h3>
                                     </div>
-                                    
+
                                     <div class="org-location">
                                         <i class="bi bi-geo-alt" aria-hidden="true"></i>
-                                        <address title="{{ $org->address}}, {{$org->commune}}, {{$org->province}}, {{$org->state}}, Chile">
+                                        <address title="{{ $org->address}}, {{$org->commune}}, {{$org->state}}, Chile">
                                             <span class="location-primary">{{ $org->address}}</span>
                                             <span class="location-secondary">
-                                                <span class="location-commune">{{$org->commune}}</span>, 
-                                                <span class="location-province">{{$org->province}}</span>
+                                                <span class="location-commune">{{$org->commune}}</span>,
                                             </span>
                                             <span class="location-tertiary">
-                                                <span class="location-state">{{$org->state}}</span>, 
+                                                <span class="location-state">{{$org->state}}</span>,
                                                 <span class="location-country">Chile</span>
                                             </span>
                                         </address>
@@ -74,18 +73,18 @@
                                 </div>
                             </div>
                         </div>
-                        
+
                         <a href="{{route('orgs.dashboard',$org->id)}}" class="org-action-btn primary">
                             <span class="btn-text">Ingresar</span>
                             <i class="bi bi-arrow-right" aria-hidden="true"></i>
                         </a>
-                        
+
                         <div class="org-card-background" aria-hidden="true"></div>
                     </div>
                 </div>
                 @endforeach
             </div>
-            
+
             <div class="orgs-pagination">
                 {!! $orgs->render('pagination::bootstrap-4') !!}
             </div>

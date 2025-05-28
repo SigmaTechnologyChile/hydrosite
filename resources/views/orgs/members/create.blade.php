@@ -74,7 +74,7 @@
                                         title="Por favor ingrese un correo electrónico válido">
                                 </div>
                                 <div class="mb-3 row">
-                                    <div class="col-md-4">
+                                    <div class="col-md-6">
                                         <label for="state" class="form-label">Región</label>
                                         <select class="form-select" id="state" name="state">
                                             <option value="">Seleccionar Región</option>
@@ -85,13 +85,8 @@
                                             @endforeach
                                         </select>
                                     </div>
-                                    <div class="col-md-4">
-                                        <label for="province" class="form-label">Provincia</label>
-                                        <select class="form-select" id="province" name="province">
-                                            <option value="">Seleccionar Provincia</option>
-                                        </select>
-                                    </div>
-                                    <div class="col-md-4">
+
+                                    <div class="col-md-6">
                                         <label for="commune" class="form-label">Comuna</label>
                                         <select class="form-select" id="commune" name="commune">
                                             <option value="">Seleccionar Comuna</option>
@@ -290,68 +285,64 @@
             toggleServiceFields();
         });
 
-
-        $(function () {
-            $("#state").change(function (e) {
-                var id = "";
-                if ($("#state").val() != null) {
-                    id = $("#state").val();
+        // NUEVO: Cargar comunas directamente desde regiones (sin provincias)
+        $(document).ready(function() {
+            // Configuración global para AJAX
+            $.ajaxSetup({
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
                 }
-                $.ajax({
-                    url: "/ajax/" + id + "/provincias",
-                    type: "get",
-                    dataType: "json",
-                    data: {
-                        'id': id,
-                    },
-                    success: function (resultado) {
-                        //alert(resultado);
-                        $('#province').empty();
-                        $('#province').append('<option value="">Seleccionar Provincia</option>');
-                        resultado.forEach(function (key, index) {
-                            $('#province').append('<option value="' + key.id + '">' + key.name_province + '</option>');
-                        });
-                    }
-                });
             });
-        });
 
-        $(function () {
-            $("#province").change(function (e) {
-                var id = "";
-                if ($("#province").val() != null) {
-                    id = $("#province").val();
+            // Cuando cambie la región, cargar las comunas directamente
+            $("#state").change(function(e) {
+                var stateId = $(this).val();
+
+                // Limpiar el selector de comunas
+                $('#commune').empty();
+                $('#commune').append('<option value="">Seleccionar Comuna</option>');
+
+                if (stateId) {
+                    $.ajax({
+                        url: "{{ url('/ajax') }}/" + stateId + "/comunas-por-region",
+                        type: "GET",
+                        dataType: "json",
+                        beforeSend: function() {
+                            $('#commune').prop('disabled', true);
+                        },
+                        success: function(resultado) {
+                            if (resultado && resultado.length > 0) {
+                                resultado.forEach(function(comuna) {
+                                    $('#commune').append('<option value="' + comuna.name + '">' + comuna.name + '</option>');
+                                });
+                            }
+                            $('#commune').prop('disabled', false);
+                        },
+                        error: function(xhr, status, error) {
+                            console.error('Error al cargar comunas:', {
+                                status: status,
+                                error: error,
+                                response: xhr.responseText
+                            });
+                            $('#commune').prop('disabled', false);
+                            alert('Error al cargar las comunas. Por favor, recarga la página.');
+                        }
+                    });
                 }
-                $.ajax({
-                    url: "/ajax/" + id + "/comunas",
-                    type: "get",
-                    dataType: "json",
-                    data: {
-                        'id': id,
-                    },
-                    success: function (resultado) {
-                        //alert(resultado);
-                        $('#commune').empty();
-                        $('#commune').append('<option value="">Seleccionar Comuna</option>');
-                        resultado.forEach(function (key, index) {
-                            $('#commune').append('<option value="' + key.name_city + '">' + key.name_city + '</option>');
-                        });
-                    }
-                });
             });
-        });
-        $(document).ready(function () {
-            $('#rut').on('blur', function () {
+
+            // Validación de RUT
+            $('#rut').on('blur', function() {
                 const rut = $(this).val();
                 if (rut) {
                     $.ajax({
-                        url: '/ajax/check-rut',
+                        url: '{{ url("/ajax/check-rut") }}',
                         type: 'POST',
                         data: {
                             '_token': '{{ csrf_token() }}',
                             'rut': rut
                         },
-                        success: function (response) {
+                        success: function(response) {
                             if (response.exists) {
                                 $('#rut').addClass('is-invalid');
                                 $('#rut-error').text('Este RUT ya está registrado.');
@@ -364,13 +355,6 @@
                 }
             });
         });
-
-
-
-
-
-
-
 
         function validarInputRut(input) {
             // Solo permite números, guion y K/k
@@ -424,6 +408,5 @@
 
             return dv === dvCalculado;
         }
-
     </script>
 @endsection
