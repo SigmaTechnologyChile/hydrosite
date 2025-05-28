@@ -185,7 +185,15 @@
                             @foreach($services as $service)
                                 <tr>
                                     <td>{{ $service->nro ?? '' }}</td>
-                                    <td>{{ $service->sector ?? 'N/D' }}</td>
+                                    <td>
+                                        @if($service->sector_name)
+                                            {{ $service->sector_name }}
+                                        @elseif(is_numeric($service->sector))
+                                            {{ \App\Models\Location::find($service->sector)->name ?? 'N/D' }}
+                                        @else
+                                            {{ $service->sector ?? 'N/D' }}
+                                        @endif
+                                    </td>
                                     <td>{{ $service->meter_number ?? 'N/D' }}</td>
                                     <td>{{ $service->invoice_type ?? 'N/D' }}</td>
                                     <td>{{ $service->meter_plan ?? 'N/D' }}</td>

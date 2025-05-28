@@ -34,21 +34,21 @@
                                 @enderror
                             </div>
 
-                            <div class="col-md-6">
-                                <label for="sector" class="form-label">Sector</label>
-                                <select class="form-select @error('sector') is-invalid @enderror" id="sector" name="sector">
-                                    <option value="">Seleccione el sector</option>
-                                    @foreach($sectors as $sector)  <!-- Reemplazamos el array estático por los sectores dinámicos -->
-                                        <option value="{{ $sector->id }}"
-                                            {{ old('sector', $service->sector_id) == $sector->id ? 'selected' : '' }}>
-                                            {{ $sector->name }}  <!-- Ajusta 'name' al campo adecuado de tu modelo Sector -->
-                                        </option>
-                                    @endforeach
-                                </select>
-                                @error('sector')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
+                     <div class="col-md-6">
+                        <label for="sector" class="form-label">Sector</label>
+                        <select class="form-select @error('sector') is-invalid @enderror" id="sector" name="sector">
+                            <option value="">Seleccione el sector</option>
+                            @foreach($sectors as $sector)
+                                <option value="{{ $sector->id }}"
+                                    {{ old('sector', $service->locality_id) == $sector->id ? 'selected' : '' }}>
+                                    {{ $sector->name }}
+                                </option>
+                            @endforeach
+                        </select>
+                        @error('sector')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
 
                             <div class="col-md-6">
                                 <label for="meter_plan" class="form-label">MIDEPLAN</label>

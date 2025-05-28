@@ -30,7 +30,7 @@
                     </ul>
                 </div>
             @endif
-            
+
 
           <div class="mb-3 col-md-6">
             <div class="mb-3">
@@ -43,7 +43,7 @@
                 </select>
             </div>
           </div>
-          
+
           <div class="mb-3 col-md-6">
             <label for="meter_plan" class="form-label">MIDEPLAN</label>
             <select class="form-select" id="meter_plan" name="meter_plan">
@@ -52,7 +52,7 @@
               <option value="0">No</option>
             </select>
           </div>
-          
+
           <div class="mb-3 col-md-6">
             <label for="percentage" class="form-label">Porcentaje</label>
             <div class="input-group">
@@ -60,7 +60,7 @@
               <span class="input-group-text">%</span>
             </div>
           </div>
-          
+
           <div class="mb-3 col-md-6">
             <label for="meter_type" class="form-label">Tipo Medidor</label>
             <select class="form-select" id="meter_type" name="meter_type">
@@ -123,7 +123,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const meterPlanSelect = document.getElementById('meter_plan');
     const percentageLabel = document.querySelector('label[for="percentage"]');  // Seleccionamos la etiqueta de porcentaje
     const percentageInput = document.getElementById('percentage');
-    
+
     function togglePercentageField() {
         if (meterPlanSelect.value === '0') {
             percentageInput.disabled = true; // Deshabilitar el campo de porcentaje
@@ -135,11 +135,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
     meterPlanSelect.addEventListener('change', togglePercentageField);
     togglePercentageField(); // Inicializar el estado del campo porcentaje
-    
+
     function updatePercentageField() {
         // Obtener el contenedor actual
-        const isMideplanEnabled = meterPlanSelect.value === 'si';
-        
+        const isMideplanEnabled = meterPlanSelect.value === '1';
+
         // Reconstruir el campo según el estado de MIDEPLAN
         if (isMideplanEnabled) {
             // Campo habilitado
@@ -151,19 +151,19 @@ document.addEventListener('DOMContentLoaded', function() {
             percentageInput.setAttribute('step', '0');
         }
     }
-    
+
     // Establecer el estado inicial
     updatePercentageField();
-    
+
     // Escuchar cambios
     if (meterPlanSelect) {
         meterPlanSelect.addEventListener('change', updatePercentageField);
     }
-    
+
     // Código para el checkbox de activo
     const activeCheckbox = document.getElementById('active');
     const activeLabel = document.getElementById('active-label');
-    
+
     if (activeCheckbox && activeLabel) {
         activeCheckbox.addEventListener('change', function() {
             activeLabel.textContent = this.checked ? 'Sí' : 'No';

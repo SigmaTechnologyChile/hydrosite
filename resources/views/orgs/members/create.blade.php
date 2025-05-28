@@ -27,7 +27,8 @@
                                 <div class="col-md-6">
                                     <label for="rut" class="form-label">RUT</label>
                                     <input type="text" class="form-control @error('rut') is-invalid @enderror" id="rut"
-                                        name="rut" value="{{ old('rut') }}" required maxlength="10" oninput="validarInputRut(this)">
+                                        name="rut" value="{{ old('rut') }}" required maxlength="10"
+                                        oninput="validarInputRut(this)">
                                     @error('rut')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
@@ -67,8 +68,9 @@
 
                                 <div class="mb-3">
                                     <label for="email" class="form-label">Correo electrónico</label>
-                                    <input type="email" class="form-control" id="email" value="{{ old('email') }}"
-                                        name="email" required pattern="[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
+                                    <input type="email" class="form-control @error('email') is-invalid @enderror" id="email"
+                                        value="{{ old('email') }}" name="email" required
+                                        pattern="[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}"
                                         title="Por favor ingrese un correo electrónico válido">
                                 </div>
                                 <div class="mb-3 row">
@@ -90,8 +92,8 @@
                                         </select>
                                     </div>
                                     <div class="col-md-4">
-                                        <label for="city" class="form-label">Comuna</label>
-                                        <select class="form-select" id="city" name="city">
+                                        <label for="commune" class="form-label">Comuna</label>
+                                        <select class="form-select" id="commune" name="commune">
                                             <option value="">Seleccionar Comuna</option>
                                         </select>
                                     </div>
@@ -194,7 +196,7 @@
 
                     <!-- Checkbox para "Activo" -->
                     <div class="form-check mb-3">
-                        <input type="checkbox" class="form-check-input" id="activo" name="activo" {{ old('activo', true) ? 'checked' : '' }}>
+                        <input type="checkbox" class="form-check-input" id="activo" name="activo" value="1" {{ old('activo', true) ? 'checked' : '' }}>
                         <label class="form-check-label" for="activo">Dejar <b>Activo</b> si es nuevo cliente y no tiene
                             servicios asignados</label>
                     </div>
@@ -203,6 +205,21 @@
                         <button type="submit" class="btn btn-primary">Añadir cliente</button>
                     </div>
                 </form>
+                @if(session('error'))
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        <i class="bi bi-exclamation-triangle me-1"></i>
+                        {{ session('error') }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                @endif
+
+                @if(session('success'))
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        <i class="bi bi-check-circle me-1"></i>
+                        {{ session('success') }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                @endif
             </div>
         </div>
     </section>
@@ -212,29 +229,65 @@
         document.addEventListener('DOMContentLoaded', function () {
             const activoCheckbox = document.getElementById('activo');
             const serviceSection = document.querySelector('.col-md-6.ps-md-4');
+            const submitButton = document.querySelector('button[type="submit"]');
+            const form = document.getElementById('newMemberForm');
 
             function toggleServiceFields() {
-                serviceSection.style.display = activoCheckbox.checked ? 'block' : 'none';
-            }
-
-            activoCheckbox.addEventListener('change', toggleServiceFields);
-            toggleServiceFields();
-
-            // Función para manejar el bloqueo del campo de porcentaje según MIDEPLAN
-            const mideplanSelect = document.getElementById('meter_plan');
-            const porcentajeInput = document.getElementById('percentage');
-
-            function togglePercentageField() {
-                if (mideplanSelect.value === '0') {
-                    porcentajeInput.disabled = true; // Deshabilitar el campo de porcentaje
-                    porcentajeInput.value = ''; // Limpiar el valor si está deshabilitado
+                if (activoCheckbox.checked) {
+                    serviceSection.style.display = 'block';
+                    serviceSection.style.opacity = '1';
                 } else {
-                    porcentajeInput.disabled = false; // Habilitar el campo de porcentaje
+                    serviceSection.style.display = 'block';
+                    serviceSection.style.opacity = '0.5';
+                    // Limpiar campos cuando se desmarca
+                    clearServiceFields();
                 }
             }
 
-            mideplanSelect.addEventListener('change', togglePercentageField);
-            togglePercentageField(); // Inicializar el estado del campo porcentaje
+            function clearServiceFields() {
+                const serviceInputs = serviceSection.querySelectorAll('input, select, textarea');
+                serviceInputs.forEach(input => {
+                    if (input.type !== 'checkbox') {
+                        input.value = '';
+                    }
+                });
+            }
+
+            function validateServiceFields() {
+                if (!activoCheckbox.checked) return true;
+
+                const requiredFields = [
+                    'locality_id', 'meter_plan', 'meter_type',
+                    'meter_number', 'invoice_type', 'diameter'
+                ];
+
+                const emptyFields = [];
+                requiredFields.forEach(fieldName => {
+                    const field = document.querySelector(`[name="${fieldName}"]`);
+                    if (field && !field.value.trim()) {
+                        emptyFields.push(fieldName);
+                    }
+                });
+
+                if (emptyFields.length > 0) {
+                    alert('Para crear un servicio, debe completar todos los campos obligatorios de la sección "Información de Servicios" o desmarcar la casilla "Dejar Activo".');
+                    return false;
+                }
+
+                return true;
+            }
+
+            // Event listeners
+            activoCheckbox.addEventListener('change', toggleServiceFields);
+
+            form.addEventListener('submit', function (e) {
+                if (!validateServiceFields()) {
+                    e.preventDefault();
+                }
+            });
+
+            // Inicializar
+            toggleServiceFields();
         });
 
 
@@ -278,10 +331,10 @@
                     },
                     success: function (resultado) {
                         //alert(resultado);
-                        $('#city').empty();
-                        $('#city').append('<option value="">Seleccionar Comuna</option>');
+                        $('#commune').empty();
+                        $('#commune').append('<option value="">Seleccionar Comuna</option>');
                         resultado.forEach(function (key, index) {
-                            $('#city').append('<option value="' + key.id + '">' + key.name_city + '</option>');
+                            $('#commune').append('<option value="' + key.name_city + '">' + key.name_city + '</option>');
                         });
                     }
                 });
@@ -320,57 +373,57 @@
 
 
         function validarInputRut(input) {
-        // Solo permite números, guion y K/k
-        input.value = input.value.replace(/[^0-9kK\-]/g, '');
+            // Solo permite números, guion y K/k
+            input.value = input.value.replace(/[^0-9kK\-]/g, '');
 
-        // Opcional: autoformatear RUT, evitar múltiples guiones, etc.
-        const rut = input.value;
+            // Opcional: autoformatear RUT, evitar múltiples guiones, etc.
+            const rut = input.value;
 
-        // Validar si la longitud mínima es aceptable antes de validar RUT completo
-        if (rut.length >= 8) {
-            if (!validarRut(rut)) {
-                document.getElementById('rut-error').innerText = 'RUT inválido.';
-                input.classList.add('is-invalid');
+            // Validar si la longitud mínima es aceptable antes de validar RUT completo
+            if (rut.length >= 8) {
+                if (!validarRut(rut)) {
+                    document.getElementById('rut-error').innerText = 'RUT inválido.';
+                    input.classList.add('is-invalid');
+                } else {
+                    document.getElementById('rut-error').innerText = '';
+                    input.classList.remove('is-invalid');
+                }
             } else {
                 document.getElementById('rut-error').innerText = '';
                 input.classList.remove('is-invalid');
             }
-        } else {
-            document.getElementById('rut-error').innerText = '';
-            input.classList.remove('is-invalid');
-        }
-    }
-
-    function validarRut(rut) {
-        // Limpia el RUT
-        rut = rut.replace(/[^0-9kK]/g, '').toUpperCase();
-
-        if (rut.length < 2) return false;
-
-        const cuerpo = rut.slice(0, -1);
-        const dv = rut.slice(-1);
-
-        let suma = 0;
-        let multiplo = 2;
-
-        for (let i = cuerpo.length - 1; i >= 0; i--) {
-            suma += parseInt(cuerpo.charAt(i)) * multiplo;
-            multiplo = multiplo < 7 ? multiplo + 1 : 2;
         }
 
-        const dvEsperado = 11 - (suma % 11);
-        let dvCalculado = '';
+        function validarRut(rut) {
+            // Limpia el RUT
+            rut = rut.replace(/[^0-9kK]/g, '').toUpperCase();
 
-        if (dvEsperado === 11) {
-            dvCalculado = '0';
-        } else if (dvEsperado === 10) {
-            dvCalculado = 'K';
-        } else {
-            dvCalculado = dvEsperado.toString();
+            if (rut.length < 2) return false;
+
+            const cuerpo = rut.slice(0, -1);
+            const dv = rut.slice(-1);
+
+            let suma = 0;
+            let multiplo = 2;
+
+            for (let i = cuerpo.length - 1; i >= 0; i--) {
+                suma += parseInt(cuerpo.charAt(i)) * multiplo;
+                multiplo = multiplo < 7 ? multiplo + 1 : 2;
+            }
+
+            const dvEsperado = 11 - (suma % 11);
+            let dvCalculado = '';
+
+            if (dvEsperado === 11) {
+                dvCalculado = '0';
+            } else if (dvEsperado === 10) {
+                dvCalculado = 'K';
+            } else {
+                dvCalculado = dvEsperado.toString();
+            }
+
+            return dv === dvCalculado;
         }
-
-        return dv === dvCalculado;
-    }
 
     </script>
 @endsection
