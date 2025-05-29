@@ -41,31 +41,43 @@ class ReadingController extends Controller
         $search = $request->input('search');
         $from_date = $request->input('from_date');
         $to_date = $request->input('to_date');
+        $year = request()->input('year');   // Ej: 2025
+$month = request()->input('month');
 
+
+if ($month && strlen($month) == 1) {
+    $month = '0' . $month;
+}
+
+$period = null;
+if ($year && $month) {
+    $period = "$year-$month";
+}
         if (!$org) {
             return redirect()->route('orgs.index')->with('error', 'Organización no encontrada.');
         }
 
-        $readings = Reading::join('services', 'readings.service_id', 'services.id')
-            ->join('members', 'services.member_id', 'members.id')
-            ->leftjoin('locations', 'services.locality_id', 'locations.id')
-            ->where('readings.org_id', $org_id)
-            ->when($sector, function ($q) use ($sector) {
-                $q->where('locations.id', $sector);
-            })
-            ->when($search, function ($q) use ($search) {
-                $q->where('members.rut', $search)
-                    ->orWhere('members.full_name', 'like', '%' . $search . '%');
-            })
-            ->when($from_date, function ($q) use ($from_date) {
-                $q->whereDate('reading.period', '>=', $from_date);
-            })
-            ->when($to_date, function ($q) use ($to_date) {
-                $q->whereDate('period', '<=', $to_date);
-            })
-            ->select('readings.*', 'services.nro', 'members.rut', 'members.full_name', 'services.sector as location_name')
-            ->orderBy('period', 'desc')->paginate(20);
-
+  $readings = Reading::join('services', 'readings.service_id', 'services.id')
+    ->join('members', 'services.member_id', 'members.id')
+    ->leftJoin('locations', 'services.locality_id', 'locations.id')
+    ->where('readings.org_id', $org_id)
+    ->when($sector, function ($q) use ($sector) {
+        if ($sector != '' && $sector != '0') {
+            $q->where('services.locality_id', $sector);
+        }
+    })
+    ->when($search, function ($q) use ($search) {
+        $q->where(function ($query) use ($search) {
+            $query->where('members.rut', $search)
+                  ->orWhere('members.full_name', 'like', '%' . $search . '%');
+        });
+    })
+    ->when($period, function ($q) use ($period) {
+        $q->where('readings.period', 'like', $period . '%');
+    })
+    ->select('readings.*', 'services.nro', 'members.rut', 'members.full_name', 'locations.name as location_name')
+    ->orderBy('readings.period', 'desc')
+    ->paginate(20);
         $locations = Location::where('org_id', $org->id)->orderby('order_by', 'ASC')->get();
 
 

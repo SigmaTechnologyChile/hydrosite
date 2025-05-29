@@ -16,7 +16,7 @@
     <section class="section dashboard">
         <div class="card top-selling overflow-auto">
             <div class="card-body pt-2">
-                <form method="GET" id="filterForm">
+                <form method="GET" id="filterForm" action="{{ route('orgs.readings.index', $org->id) }}">
                     <div class="row g-3 align-items-end">
                         <!-- Año -->
                         <div class="col-md-1">
