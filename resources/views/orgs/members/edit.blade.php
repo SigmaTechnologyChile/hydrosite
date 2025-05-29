@@ -1,5 +1,11 @@
 @extends('layouts.nice', ['active' => 'orgs.members.index', 'title' => 'Ver/Editar Miembro'])
+@php
+    use Illuminate\Support\Str;
 
+    $mobilePhone = Str::startsWith($member->mobile_phone, '+56') ? Str::replaceFirst('+56', '', $member->mobile_phone) : $member->mobile_phone;
+
+    $phone = Str::startsWith($member->phone, '+56') ? Str::replaceFirst('+56', '', $member->phone) : $member->phone;
+@endphp
 @section('content')
     <div class="pagetitle">
         <h1>Detalles de Miembro: {{$member->first_name}} {{$member->last_name}}</h1>
@@ -112,33 +118,40 @@
                             @enderror
                         </div>
                         <div class="mb-3">
-                            <label for="mobilephone" class="form-label">Número de celular</label>
-                            <input type="text" maxlength="15"
-                                class="form-control @error('mobilephone') is-invalid @enderror" id="mobilephone"
-                                name="mobilephone" value="{{ old('mobilephone', $member->mobile_phone) }}" required>
-                            @error('mobilephone')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
+                            <label for="mobilephone" class=" form-label">Número de celular</label>
+                            <div class="input-group">
+                                <span class="input-group-text">+56</span>
+                                <input type="text" maxlength="9"
+                                    class="form-control  @error('mobile_phone') is-invalid @enderror" id="mobile_phone"
+                                    name="mobile_phone" value="{{ old('mobile_phone', $mobilePhone) }}" required>
+                                @error('mobile_phone')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+
                         </div>
 
                         <!-- NUEVO: Teléfono fijo -->
                         <div class="mb-3">
                             <label for="phone" class="form-label">Número de teléfono</label>
-                            <input type="text" maxlength="15" class="form-control @error('phone') is-invalid @enderror"
-                                id="phone" name="phone" value="{{ old('phone', $member->phone) }}" required>
-                            @error('phone')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
+                            <div class="input-group">
+                                <span class="input-group-text">+56</span>
+                                <input type="text" maxlength="9" class="form-control @error('phone') is-invalid @enderror"
+                                    id="phone" name="phone" value="{{ old('phone', $phone) }}">
+                                @error('phone')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
                         </div>
                         <div class="mb-3">
                             <label for="gender" class="form-label">Género</label>
                             <select class="form-select @error('gender') is-invalid @enderror" id="gender" name="gender"
                                 required>
                                 <option value="">Seleccionar género</option>
-                                <option value="MASCULINO" {{ old('gender', $member->gender) == 'MASCULINO' ? 'selected' : '' }}>Hombre</option>
+                                <option value="MASCULINO" {{ old('gender', $member->gender) == 'MASCULINO' ? 'selected' : '' }}>MASCULINO</option>
                                 <option value="FEMENINO" {{ old('gender', $member->gender) == 'FEMENINO' ? 'selected' : '' }}>
-                                    Mujer</option>
-                                <option value="OTRO" {{ old('gender', $member->gender) == 'OTRO' ? 'selected' : '' }}>Otro
+                                    FEMENINO</option>
+                                <option value="OTRO" {{ old('gender', $member->gender) == 'OTRO' ? 'selected' : '' }}>OTRO
                                 </option>
                             </select>
                             @error('gender')
@@ -220,47 +233,47 @@
     <script>
 
         $(document).ready(function () {
-$.ajaxSetup({
-        headers: {
-            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-        }
-    });
-
-    $("#state").change(function (e) {
-        var stateId = $(this).val();
-
-        $('#commune').empty();
-        $('#commune').append('<option value="">Seleccionar Comuna</option>');
-
-        if (stateId) {
-            $.ajax({
-                url: "{{ url('/ajax') }}/" + stateId + "/comunas-por-region",
-                type: "GET",
-                dataType: "json",
-                beforeSend: function() {
-                    $('#commune').prop('disabled', true);
-                },
-                success: function (resultado) {
-                    if (resultado && resultado.length > 0) {
-                        resultado.forEach(function (comuna) {
-                            $('#commune').append('<option value="' + comuna.name + '">' + comuna.name + '</option>');
-                        });
-                    }
-                    $('#commune').prop('disabled', false);
-                },
-                error: function (xhr, status, error) {
-                    console.error('Error al cargar comunas:', {
-                        status: status,
-                        error: error,
-                        response: xhr.responseText,
-                        url: "{{ url('/ajax') }}/" + stateId + "/comunas-por-region"
-                    });
-                    $('#commune').prop('disabled', false);
-                    alert('Error al cargar las comunas. Por favor, recarga la página.');
+            $.ajaxSetup({
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
                 }
             });
-        }
-    });
+
+            $("#state").change(function (e) {
+                var stateId = $(this).val();
+
+                $('#commune').empty();
+                $('#commune').append('<option value="">Seleccionar Comuna</option>');
+
+                if (stateId) {
+                    $.ajax({
+                        url: "{{ url('/ajax') }}/" + stateId + "/comunas-por-region",
+                        type: "GET",
+                        dataType: "json",
+                        beforeSend: function () {
+                            $('#commune').prop('disabled', true);
+                        },
+                        success: function (resultado) {
+                            if (resultado && resultado.length > 0) {
+                                resultado.forEach(function (comuna) {
+                                    $('#commune').append('<option value="' + comuna.name + '">' + comuna.name + '</option>');
+                                });
+                            }
+                            $('#commune').prop('disabled', false);
+                        },
+                        error: function (xhr, status, error) {
+                            console.error('Error al cargar comunas:', {
+                                status: status,
+                                error: error,
+                                response: xhr.responseText,
+                                url: "{{ url('/ajax') }}/" + stateId + "/comunas-por-region"
+                            });
+                            $('#commune').prop('disabled', false);
+                            alert('Error al cargar las comunas. Por favor, recarga la página.');
+                        }
+                    });
+                }
+            });
 
         });
     </script>

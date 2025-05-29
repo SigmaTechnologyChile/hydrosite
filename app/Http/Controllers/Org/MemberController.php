@@ -288,8 +288,8 @@ public function edit($orgId, $memberId)
             'gender'      => 'required|in:MASCULINO,FEMENINO,OTRO',
             'state'       => 'required',
             'commune'     => 'required|string|max:100',
-            'mobilephone' => 'required|string|max:15',
-            'phone'       => 'required|string|max:15',
+            'mobilephone' => 'required|string|max:9',
+            'phone'       => 'nullable|string|max:9',
         ]);
 
         $org    = Org::findOrFail($orgId);
@@ -305,7 +305,9 @@ public function edit($orgId, $memberId)
         $member->city_id = $validated['state']; // Guardamos la región en city_id
         $member->commune = $validated['commune'];
         $member->mobile_phone = $validated['mobilephone'];
+        $member->mobile_phone = '+56' . ltrim($request->input('mobilephone'), '0');
         $member->phone        = $validated['phone'];
+        $member->phone = '+56' . ltrim($request->input('phone'), '0');
 
         $member->save();
 
