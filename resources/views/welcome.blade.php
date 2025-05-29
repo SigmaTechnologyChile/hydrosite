@@ -129,18 +129,16 @@
                                     </li>
                                 </ul>
                             </div>
-
+<div class="w-100 d-flex justify-content-center mt-3">
                             <div class="cta-container btn mx-auto mt-3 link-hover-fix">
                                 <div class="cta-highlight"></div>
                                 <a href="tel:+56 9 5246 8967" class="btn-get-started">
                                     ¡Llamanos ahora!
                                     <i class="fas fa-users"></i>
                                 </a>
-                                <p class="cta-subtext" style="margin-top: 50px;"><strong>Juntos cuidamos cada
-                                        gota</strong>: Regístrate y accede a herramientas profesionales para gestionar,
-                                    optimizar y preservar los recursos hídricos. ¡Tu expertise es vital para nuestro
-                                    equipo!</p>
+
                             </div>
+                              </div>
                         </div>
                     </div>
                 </div>
