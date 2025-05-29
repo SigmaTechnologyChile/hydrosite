@@ -27,7 +27,7 @@
                                 <div class="col-md-6">
                                     <label for="rut" class="form-label">RUT</label>
                                     <input type="text" class="form-control @error('rut') is-invalid @enderror" id="rut"
-                                        name="rut" value="{{ old('rut') }}" required maxlength="10"
+                                        name="rut" value="{{ old('rut') }}" required maxlength="12"
                                         oninput="validarInputRut(this)">
                                     @error('rut')
                                         <div class="invalid-feedback">{{ $message }}</div>
@@ -357,56 +357,86 @@
         });
 
         function validarInputRut(input) {
-            // Solo permite números, guion y K/k
-            input.value = input.value.replace(/[^0-9kK\-]/g, '');
+    let valor = input.value.toLowerCase();
 
-            // Opcional: autoformatear RUT, evitar múltiples guiones, etc.
-            const rut = input.value;
+    // Remover todo lo que no sea número ni 'k'
+    valor = valor.replace(/[^0-9k]/g, '');
 
-            // Validar si la longitud mínima es aceptable antes de validar RUT completo
-            if (rut.length >= 8) {
-                if (!validarRut(rut)) {
-                    document.getElementById('rut-error').innerText = 'RUT inválido.';
-                    input.classList.add('is-invalid');
-                } else {
-                    document.getElementById('rut-error').innerText = '';
-                    input.classList.remove('is-invalid');
-                }
-            } else {
-                document.getElementById('rut-error').innerText = '';
-                input.classList.remove('is-invalid');
+    // Asegurar que solo haya una 'k' y solo al final
+    let kIndex = valor.indexOf('k');
+    if (kIndex !== -1 && kIndex !== valor.length - 1) {
+        // Si hay una 'k' en medio, elimínala
+        valor = valor.replace(/k/g, '');
+    } else if ((valor.match(/k/g) || []).length > 1) {
+        // Si hay más de una 'k', dejamos solo la última
+        valor = valor.replace(/k/g, '');
+        valor += 'k';
+    }
+
+    // Si hay más de un carácter, formatear
+    if (valor.length > 1) {
+        let cuerpo = valor.slice(0, -1);
+        let dv = valor.slice(-1);
+
+        // Validar que el dígito verificador sea número o 'k'
+        if (!/[0-9k]/.test(dv)) {
+            dv = '';
+        }
+
+        // Formatear puntos
+        cuerpo = cuerpo.replace(/\./g, '');
+        let cuerpoFormateado = '';
+        let count = 0;
+        for (let i = cuerpo.length - 1; i >= 0; i--) {
+            cuerpoFormateado = cuerpo[i] + cuerpoFormateado;
+            count++;
+            if (count === 3 && i !== 0) {
+                cuerpoFormateado = '.' + cuerpoFormateado;
+                count = 0;
             }
         }
 
-        function validarRut(rut) {
-            // Limpia el RUT
-            rut = rut.replace(/[^0-9kK]/g, '').toUpperCase();
+        input.value = cuerpoFormateado + (dv ? '-' + dv : '');
+    } else {
+        input.value = valor;
+    }
 
-            if (rut.length < 2) return false;
-
-            const cuerpo = rut.slice(0, -1);
-            const dv = rut.slice(-1);
-
-            let suma = 0;
-            let multiplo = 2;
-
-            for (let i = cuerpo.length - 1; i >= 0; i--) {
-                suma += parseInt(cuerpo.charAt(i)) * multiplo;
-                multiplo = multiplo < 7 ? multiplo + 1 : 2;
-            }
-
-            const dvEsperado = 11 - (suma % 11);
-            let dvCalculado = '';
-
-            if (dvEsperado === 11) {
-                dvCalculado = '0';
-            } else if (dvEsperado === 10) {
-                dvCalculado = 'K';
-            } else {
-                dvCalculado = dvEsperado.toString();
-            }
-
-            return dv === dvCalculado;
+    // Validación
+    if (input.value.length > 3) {
+        if (!validarRut(input.value)) {
+            $('#rut-error').text('RUT inválido');
+            $(input).addClass('is-invalid');
+        } else {
+            $('#rut-error').text('');
+            $(input).removeClass('is-invalid');
         }
-    </script>
+    } else {
+        $('#rut-error').text('');
+        $(input).removeClass('is-invalid');
+    }
+}
+
+function validarRut(rutCompleto) {
+    rutCompleto = rutCompleto.replace(/\./g, '').replace('-', '');
+
+    if (rutCompleto.length < 2) return false;
+
+    let cuerpo = rutCompleto.slice(0, -1);
+    let dv = rutCompleto.slice(-1).toLowerCase();
+
+    let suma = 0;
+    let multiplo = 2;
+
+    for (let i = cuerpo.length - 1; i >= 0; i--) {
+        suma += parseInt(cuerpo.charAt(i), 10) * multiplo;
+        multiplo = multiplo < 7 ? multiplo + 1 : 2;
+    }
+
+    let dvEsperado = 11 - (suma % 11);
+    dvEsperado = dvEsperado === 11 ? '0' : dvEsperado === 10 ? 'k' : dvEsperado.toString();
+
+    return dv === dvEsperado;
+}
+
+  </script>
 @endsection
