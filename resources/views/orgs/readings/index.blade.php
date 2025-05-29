@@ -194,7 +194,6 @@
                                                             type="checkbox"
                                                             id="cargo_corte_reposicion"
                                                             name="cargo_corte_reposicion"
-                                                              @if (isset($reading->corte_reposicion) && intval($reading->corte_reposicion) > 0) checked="checked" @endif
                                                           >
                                                         <label class="form-check-label" for="cargo_corte_reposicion">
                                                             Cargo Corte Reposición
@@ -204,7 +203,7 @@
                                                 </div>
                                                 <div class="mb-3">
                                                     <label for="other" class="form-label">Otros Cargos</label>
-                                                    <input type="number" class="form-control" id="other" name="other" value="{{ $reading->other }}">
+                                                    <input type="number" class="form-control" id="other" name="other" >
                                                 </div>
 
                                                 <div class="mb-3">
