@@ -100,19 +100,19 @@
                             </div>
                             <div class="mb-3 row">
                                 <div class="col-md-6">
-                                    <label for="celular" class="form-label">Celular</label>
+                                    <label for="mobile_phone" class="form-label">Celular</label>
                                     <div class="input-group">
                                         <span class="input-group-text">+56</span>
 
-                                        <input type="tel" class="form-control" id="celular" name="mobile_phone" required>
+                                        <input type="tel" class="form-control" id="mobile_phone" name="mobile_phone" required>
                                     </div>
                                 </div>
                                 <div class="col-md-6">
-                                    <label for="telefono" class="form-label">Teléfono fijo</label>
+                                    <label for="phone" class="form-label">Teléfono fijo</label>
                                     <div class="input-group">
                                         <span class="input-group-text">+56</span>
 
-                                        <input type="tel" class="form-control" id="telefono" name="phone">
+                                        <input type="tel" class="form-control" id="phone" name="phone">
                                     </div>
                                 </div>
                             </div>

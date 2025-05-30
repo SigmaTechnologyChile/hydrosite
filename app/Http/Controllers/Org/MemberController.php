@@ -104,7 +104,7 @@ class MemberController extends Controller
     public function store(Request $request, $orgId)
     {
 
-        // dd($request->all());
+         dd($request->all());
         $org = $this->org;
 
         $rules = [
@@ -180,7 +180,7 @@ class MemberController extends Controller
             'phone' => 'nullable|string|max:15',
             'partner' => 'required',
             'gender' => 'required|string',
-            'active' => 'nullable|boolean',
+            'activo' => 'nullable|boolean',
         ];
 
 
@@ -219,14 +219,17 @@ class MemberController extends Controller
         $member->email = $validated['email'];
         $member->address = strtoupper($validated['address']);
         $member->partner = $validated['partner'];
-        $member->phone = $validated['phone'];
-        $member->phone = '+56' . ltrim($request->input('phone'), '0');
 
-        $member->mobile_phone = $validated['mobile_phone'];
-        $member->mobile_phone = '+56' . ltrim($request->input('mobilephone'), '0');
-
+        $member->phone = '+56' . ltrim($validated['phone'], '0');
+        $member->mobile_phone = '+56' . ltrim($validated['mobile_phone'], '0');
         $member->active = $validated['activo'] ?? 1;
         $member->save();
+
+                // ✅ CREAR RELACIÓN ORG-MEMBER DENTRO DE LA TRANSACCIÓN
+                $orgMember = new OrgMember();
+                $orgMember->org_id = $org->id;
+                $orgMember->member_id = $member->id;
+                $orgMember->save();
 
      if ($request->has('activo') && $request->input('activo') == 1) {
         DB::transaction(function () use ($org, $member, $validated, $request) {
@@ -268,10 +271,6 @@ class MemberController extends Controller
                 $service->save();
             });
         }
-        $OrgMember = new OrgMember();
-        $OrgMember->org_id = $org->id;
-        $OrgMember->member_id = $member->id;
-        $OrgMember->save();
 
         return redirect()->route('orgs.members.index', $org->id)->with('success', 'Socio creado correctamente.');
     }
@@ -321,7 +320,7 @@ class MemberController extends Controller
             'gender' => 'required|in:MASCULINO,FEMENINO,OTRO',
             'state' => 'required',
             'commune' => 'required|string|max:100',
-            'mobilephone' => 'required|string|max:9',
+            'mobile_phone' => 'required|string|max:9',
             'phone' => 'nullable|string|max:9',
         ]);
 
@@ -337,10 +336,8 @@ class MemberController extends Controller
         $member->gender = $validated['gender'];
         $member->city_id = $validated['state']; // Guardamos la región en city_id
         $member->commune = $validated['commune'];
-        $member->mobile_phone = $validated['mobilephone'];
-        $member->mobile_phone = '+56' . ltrim($request->input('mobilephone'), '0');
-        $member->phone = $validated['phone'];
-        $member->phone = '+56' . ltrim($request->input('phone'), '0');
+        $member->mobile_phone = '+56' . ltrim($validated['mobile_phone'], '0');
+        $member->phone = '+56' . ltrim($validated['phone'], '0');
 
         $member->save();
 

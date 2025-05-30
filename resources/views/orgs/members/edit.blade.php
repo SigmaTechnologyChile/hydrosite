@@ -2,7 +2,7 @@
 @php
     use Illuminate\Support\Str;
 
-    $mobilePhone = Str::startsWith($member->mobile_phone, '+56') ? Str::replaceFirst('+56', '', $member->mobile_phone) : $member->mobile_phone;
+    $mobile_phone = Str::startsWith($member->mobile_phone, '+56') ? Str::replaceFirst('+56', '', $member->mobile_phone) : $member->mobile_phone;
 
     $phone = Str::startsWith($member->phone, '+56') ? Str::replaceFirst('+56', '', $member->phone) : $member->phone;
 @endphp
@@ -118,12 +118,12 @@
                             @enderror
                         </div>
                         <div class="mb-3">
-                            <label for="mobilephone" class=" form-label">Número de celular</label>
+                            <label for="mobile_phone" class=" form-label">Número de celular</label>
                             <div class="input-group">
                                 <span class="input-group-text">+56</span>
                                 <input type="text" maxlength="9"
                                     class="form-control  @error('mobile_phone') is-invalid @enderror" id="mobile_phone"
-                                    name="mobile_phone" value="{{ old('mobile_phone', $mobilePhone) }}" required>
+                                    name="mobile_phone" value="{{ old('mobile_phone', $mobile_phone) }}" required>
                                 @error('mobile_phone')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror

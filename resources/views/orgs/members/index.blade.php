@@ -158,12 +158,12 @@
                                     <input type="text" class="form-control" id="direccion" name="address" required>
                                 </div>
                                 <div class="mb-3">
-                                    <label for="celular" class="form-label">Celular</label>
-                                    <input type="tel" class="form-control" id="celular" name="mobile_phone">
+                                    <label for="mobile_phone" class="form-label">Celular</label>
+                                    <input type="tel" class="form-control" id="mobile_phone" name="mobile_phone">
                                 </div>
                                 <div class="mb-3">
-                                    <label for="telefono" class="form-label">Teléfono fijo</label>
-                                    <input type="tel" class="form-control" id="telefono" name="phone">
+                                    <label for="phone" class="form-label">Teléfono fijo</label>
+                                    <input type="tel" class="form-control" id="phone" name="phone">
                                 </div>
                             </div>
 
