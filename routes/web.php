@@ -211,6 +211,9 @@ Route::prefix('ajax')->name('ajax.')->group(function () {
 
     // Nueva ruta para comunas por región (sin provincia)
     Route::get('{stateId}/comunas-por-region', [App\Http\Controllers\AjaxController::class, 'citiesByState']);
+
+     // Nueva ruta para verificar RUT
+    Route::post('check-rut', [App\Http\Controllers\AjaxController::class, 'checkRut']);
 });
 
 Route::get('pos-integrado', function () {

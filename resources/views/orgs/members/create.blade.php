@@ -101,11 +101,19 @@
                             <div class="mb-3 row">
                                 <div class="col-md-6">
                                     <label for="celular" class="form-label">Celular</label>
-                                    <input type="tel" class="form-control" id="celular" name="mobile_phone">
+                                    <div class="input-group">
+                                        <span class="input-group-text">+56</span>
+
+                                        <input type="tel" class="form-control" id="celular" name="mobile_phone" required>
+                                    </div>
                                 </div>
                                 <div class="col-md-6">
                                     <label for="telefono" class="form-label">Teléfono fijo</label>
-                                    <input type="tel" class="form-control" id="telefono" name="phone">
+                                    <div class="input-group">
+                                        <span class="input-group-text">+56</span>
+
+                                        <input type="tel" class="form-control" id="telefono" name="phone">
+                                    </div>
                                 </div>
                             </div>
 
@@ -115,6 +123,33 @@
                         <div class="col-md-6 ps-md-4">
                             <h5 class="text-primary mb-3">Información de Servicios <span
                                     class="text-muted fs-6 fw-normal"></span></h5>
+
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label for="service_state" class="form-label">Región del Servicio</label>
+                                    <select class="form-select" id="service_state" name="service_state">
+                                        <option value="">Seleccionar Región</option>
+                                        @foreach($states as $state)
+                                            <option value="{{$state->id}}" {{ old('service_state') == $state->id ? 'selected' : '' }}>
+                                                {{$state->name_state}}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="service_commune" class="form-label">Comuna del Servicio</label>
+                                    <select class="form-select" id="service_commune" name="service_commune">
+                                        <option value="">Seleccionar Comuna</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Dirección del Servicio -->
+                            <div class="mb-3">
+                                <label for="service_address" class="form-label">Dirección del Servicio</label>
+                                <input type="text" class="form-control" id="service_address" name="service_address"
+                                    value="{{ old('service_address') }}">
+                            </div>
                             <div class="mb-3">
                                 <label for="locality_id" class="form-label">Sector</label>
                                 <select class="form-select" id="locality_id" name="locality_id">
@@ -221,142 +256,183 @@
 @endsection
 @section('js')
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const activoCheckbox = document.getElementById('activo');
-            const serviceSection = document.querySelector('.col-md-6.ps-md-4');
-            const submitButton = document.querySelector('button[type="submit"]');
-            const form = document.getElementById('newMemberForm');
+       document.addEventListener('DOMContentLoaded', function () {
+    const activoCheckbox = document.getElementById('activo');
+    const serviceSection = document.querySelector('.col-md-6.ps-md-4');
+    const submitButton = document.querySelector('button[type="submit"]');
+    const form = document.getElementById('newMemberForm');
 
-            function toggleServiceFields() {
-                if (activoCheckbox.checked) {
-                    serviceSection.style.display = 'block';
-                    serviceSection.style.opacity = '1';
+    function toggleServiceFields() {
+        if (activoCheckbox.checked) {
+            serviceSection.style.display = 'block';
+            serviceSection.style.opacity = '1';
+        } else {
+            serviceSection.style.display = 'block';
+            serviceSection.style.opacity = '0.5';
+            // Limpiar campos cuando se desmarca
+            clearServiceFields();
+        }
+    }
+
+    function clearServiceFields() {
+        const serviceInputs = serviceSection.querySelectorAll('input, select, textarea');
+        serviceInputs.forEach(input => {
+            if (input.type !== 'checkbox') {
+                input.value = '';
+            }
+        });
+    }
+
+    function validateServiceFields() {
+        // Si el checkbox no está marcado, no validar nada
+        if (!activoCheckbox.checked) return true;
+
+        // Solo verificar que los campos principales no estén vacíos
+        const criticalFields = ['locality_id', 'meter_plan', 'meter_type', 'meter_number', 'invoice_type', 'diameter'];
+
+        for (let fieldName of criticalFields) {
+            const field = document.querySelector(`[name="${fieldName}"]`);
+            if (field && !field.value.trim()) {
+                alert('Para crear un servicio, debe completar todos los campos obligatorios de la sección "Información de Servicios" o desmarcar la casilla "Dejar Activo".');
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+
+    // Event listeners
+    activoCheckbox.addEventListener('change', toggleServiceFields);
+
+    form.addEventListener('submit', function (e) {
+        if (!validateServiceFields()) {
+            e.preventDefault();
+        }
+    });
+
+    // Inicializar
+    toggleServiceFields();
+});
+
+// NUEVO: Cargar comunas directamente desde regiones (sin provincias)
+$(document).ready(function () {
+    // Configuración global para AJAX
+    $.ajaxSetup({
+        headers: {
+            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+        }
+    });
+
+    // Cuando cambie la región de datos personales, cargar las comunas
+    $("#state").change(function (e) {
+        var stateId = $(this).val();
+
+        // Limpiar el selector de comunas
+        $('#commune').empty();
+        $('#commune').append('<option value="">Seleccionar Comuna</option>');
+
+        if (stateId) {
+            $.ajax({
+                url: "{{ url('/ajax') }}/" + stateId + "/comunas-por-region",
+                type: "GET",
+                dataType: "json",
+                beforeSend: function () {
+                    $('#commune').prop('disabled', true);
+                },
+                success: function (resultado) {
+                    if (resultado && resultado.length > 0) {
+                        resultado.forEach(function (comuna) {
+                            $('#commune').append('<option value="' + comuna.name + '">' + comuna.name + '</option>');
+                        });
+                    }
+                    $('#commune').prop('disabled', false);
+                },
+                error: function (xhr, status, error) {
+                    console.error('Error al cargar comunas:', {
+                        status: status,
+                        error: error,
+                        response: xhr.responseText
+                    });
+                    $('#commune').prop('disabled', false);
+                    alert('Error al cargar las comunas. Por favor, recarga la página.');
+                }
+            });
+        }
+    });
+
+    // NUEVO: Cuando cambie la región del servicio, cargar las comunas del servicio
+    $("#service_state").change(function (e) {
+        var stateId = $(this).val();
+
+        // Limpiar el selector de comunas del servicio
+        $('#service_commune').empty();
+        $('#service_commune').append('<option value="">Seleccionar Comuna</option>');
+
+        if (stateId) {
+            $.ajax({
+                url: "{{ url('/ajax') }}/" + stateId + "/comunas-por-region",
+                type: "GET",
+                dataType: "json",
+                beforeSend: function () {
+                    $('#service_commune').prop('disabled', true);
+                },
+                success: function (resultado) {
+                    if (resultado && resultado.length > 0) {
+                        resultado.forEach(function (comuna) {
+                            $('#service_commune').append('<option value="' + comuna.name + '">' + comuna.name + '</option>');
+                        });
+                    }
+                    $('#service_commune').prop('disabled', false);
+                },
+                error: function (xhr, status, error) {
+                    console.error('Error al cargar comunas del servicio:', {
+                        status: status,
+                        error: error,
+                        response: xhr.responseText
+                    });
+                    $('#service_commune').prop('disabled', false);
+                    alert('Error al cargar las comunas del servicio. Por favor, recarga la página.');
+                }
+            });
+        }
+    });
+$('#rut').on('blur', function () {
+    const rut = $(this).val();
+    if (rut && rut.length > 8) {
+        // Limpiar RUT para enviar al servidor
+        const rutLimpio = rut.replace(/[^0-9kK]/g, '').toUpperCase();
+
+        $.ajax({
+            url: '{{ url("/ajax/check-rut") }}',
+            type: 'POST',
+            data: {
+                '_token': '{{ csrf_token() }}',
+                'rut': rutLimpio
+            },
+            success: function (response) {
+                if (response.exists) {
+                    $('#rut').addClass('is-invalid');
+                    $('#rut-error').text('Este RUT ya está registrado en el sistema.');
+                    // Deshabilitar el botón de envío
+                    $('button[type="submit"]').prop('disabled', true);
                 } else {
-                    serviceSection.style.display = 'block';
-                    serviceSection.style.opacity = '0.5';
-                    // Limpiar campos cuando se desmarca
-                    clearServiceFields();
+                    $('#rut').removeClass('is-invalid');
+                    $('#rut-error').text('');
+                    // Habilitar el botón de envío
+                    $('button[type="submit"]').prop('disabled', false);
                 }
+            },
+            error: function() {
+                console.log('Error al verificar RUT');
             }
-
-            function clearServiceFields() {
-                const serviceInputs = serviceSection.querySelectorAll('input, select, textarea');
-                serviceInputs.forEach(input => {
-                    if (input.type !== 'checkbox') {
-                        input.value = '';
-                    }
-                });
-            }
-
-            function validateServiceFields() {
-                if (!activoCheckbox.checked) return true;
-
-                const requiredFields = [
-                    'locality_id', 'meter_plan', 'meter_type',
-                    'meter_number', 'invoice_type', 'diameter'
-                ];
-
-                const emptyFields = [];
-                requiredFields.forEach(fieldName => {
-                    const field = document.querySelector(`[name="${fieldName}"]`);
-                    if (field && !field.value.trim()) {
-                        emptyFields.push(fieldName);
-                    }
-                });
-
-                if (emptyFields.length > 0) {
-                    alert('Para crear un servicio, debe completar todos los campos obligatorios de la sección "Información de Servicios" o desmarcar la casilla "Dejar Activo".');
-                    return false;
-                }
-
-                return true;
-            }
-
-            // Event listeners
-            activoCheckbox.addEventListener('change', toggleServiceFields);
-
-            form.addEventListener('submit', function (e) {
-                if (!validateServiceFields()) {
-                    e.preventDefault();
-                }
-            });
-
-            // Inicializar
-            toggleServiceFields();
         });
+    }
+});
 
-        // NUEVO: Cargar comunas directamente desde regiones (sin provincias)
-        $(document).ready(function() {
-            // Configuración global para AJAX
-            $.ajaxSetup({
-                headers: {
-                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-                }
-            });
+});
 
-            // Cuando cambie la región, cargar las comunas directamente
-            $("#state").change(function(e) {
-                var stateId = $(this).val();
-
-                // Limpiar el selector de comunas
-                $('#commune').empty();
-                $('#commune').append('<option value="">Seleccionar Comuna</option>');
-
-                if (stateId) {
-                    $.ajax({
-                        url: "{{ url('/ajax') }}/" + stateId + "/comunas-por-region",
-                        type: "GET",
-                        dataType: "json",
-                        beforeSend: function() {
-                            $('#commune').prop('disabled', true);
-                        },
-                        success: function(resultado) {
-                            if (resultado && resultado.length > 0) {
-                                resultado.forEach(function(comuna) {
-                                    $('#commune').append('<option value="' + comuna.name + '">' + comuna.name + '</option>');
-                                });
-                            }
-                            $('#commune').prop('disabled', false);
-                        },
-                        error: function(xhr, status, error) {
-                            console.error('Error al cargar comunas:', {
-                                status: status,
-                                error: error,
-                                response: xhr.responseText
-                            });
-                            $('#commune').prop('disabled', false);
-                            alert('Error al cargar las comunas. Por favor, recarga la página.');
-                        }
-                    });
-                }
-            });
-
-            // Validación de RUT
-            $('#rut').on('blur', function() {
-                const rut = $(this).val();
-                if (rut) {
-                    $.ajax({
-                        url: '{{ url("/ajax/check-rut") }}',
-                        type: 'POST',
-                        data: {
-                            '_token': '{{ csrf_token() }}',
-                            'rut': rut
-                        },
-                        success: function(response) {
-                            if (response.exists) {
-                                $('#rut').addClass('is-invalid');
-                                $('#rut-error').text('Este RUT ya está registrado.');
-                            } else {
-                                $('#rut').removeClass('is-invalid');
-                                $('#rut-error').text('');
-                            }
-                        }
-                    });
-                }
-            });
-        });
-
-        function validarInputRut(input) {
+function validarInputRut(input) {
     let valor = input.value.toLowerCase();
 
     // Remover todo lo que no sea número ni 'k'
@@ -438,5 +514,6 @@ function validarRut(rutCompleto) {
     return dv === dvEsperado;
 }
 
-  </script>
+
+    </script>
 @endsection

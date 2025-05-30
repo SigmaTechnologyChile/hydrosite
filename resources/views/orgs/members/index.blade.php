@@ -108,7 +108,7 @@
                                                 <h6>Operación</h6>
                                             </li>
                                             <li><a class="dropdown-item" href="{{ route('orgs.members.edit', [$org->id, $member->id]) }}">Ver/Editar</a></li>
-                                            <li><a class="dropdown-item" href="#">Desactivar</a></li>
+                                            <!-- <li><a class="dropdown-item" href="#">Desactivar</a></li> -->
                                             <li><a class="dropdown-item" href="{{ route('orgs.services.createForMember', [$org->id, $member->id]) }}">Agregar servicio</a></li>
                                         </ul>
                                     </div>
