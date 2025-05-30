@@ -15,6 +15,7 @@ use Illuminate\Routing\Route;
 use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;
 
+
 class MemberController extends Controller
 {
     protected $_param;
@@ -379,17 +380,17 @@ class MemberController extends Controller
         }
     }
 
-    public function editService($orgId, $memberId, $serviceId)
-    {
+public function editService($orgId, $memberId, $serviceId)
+{
+    $org = Org::findOrFail($orgId);
+    $member = Member::findOrFail($memberId);
+    $service = Service::findOrFail($serviceId);
 
-        $org = Org::findOrFail($orgId);
-        $member = Member::findOrFail($memberId);
-        $service = Service::findOrFail($serviceId);
+    $sectors = Location::where('org_id', $orgId)->get();
+    $states = State::orderBy('name_state')->get();
 
-        $sectors = Location::where('org_id', $orgId)->get();
-
-        return view('orgs.members.editservice', compact('org', 'member', 'service', 'sectors'));
-    }
+    return view('orgs.members.editservice', compact('org', 'member', 'service', 'sectors', 'states'));
+}
 
     public function updateService(Request $request, $orgId, $memberId, $serviceId)
     {
@@ -401,6 +402,9 @@ class MemberController extends Controller
             'meter_number' => 'required|string',
             'invoice_type' => 'required|in:boleta,factura',
             'diameter' => 'required|in:1/2,3/4',
+            'service_state' => 'required|exists:states,id',
+        'service_commune' => 'required|string|max:100',
+        'service_address' => 'required|string|max:255',
         ]);
 
         $service = Service::findOrFail($serviceId);
@@ -408,10 +412,16 @@ class MemberController extends Controller
         // Obtener el nombre del sector desde la tabla locations
         $location = Location::findOrFail($validated['sector']);
 
+
+         $serviceState = State::findOrFail($validated['service_state']);
+    $serviceStateName = $serviceState->name_state;
+
+    $service->state = $serviceStateName;
         // Guardar correctamente ambos campos
         $service->locality_id = $validated['sector'];  // ID del sector
         $service->sector = $location->name;           // Nombre del sector
-
+$service->commune = $validated['service_commune'];
+    $service->address = strtoupper($validated['service_address']);
         $service->meter_plan = (int) $validated['meter_plan'];
 
         // Manejo del porcentaje

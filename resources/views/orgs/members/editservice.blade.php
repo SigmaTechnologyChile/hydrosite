@@ -50,6 +50,49 @@
                         @enderror
                     </div>
 
+                     <div class="col-md-6">
+                                <label for="service_state" class="form-label">Región del Servicio</label>
+                                <select class="form-select @error('service_state') is-invalid @enderror" id="service_state" name="service_state">
+                                    <option value="">Seleccionar Región</option>
+                                    @foreach($states as $state)
+                                        <option value="{{ $state->id }}"
+                                            {{ old('service_state', $service->state_id ?? '') == $state->id ? 'selected' : '' }}>
+                                            {{ $state->name_state }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                @error('service_state')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="service_commune" class="form-label">Comuna del Servicio</label>
+                                <select class="form-select @error('service_commune') is-invalid @enderror" id="service_commune" name="service_commune">
+                                    <option value="">Seleccionar Comuna</option>
+                                    @if(old('service_commune', $service->commune))
+                                        <option value="{{ old('service_commune', $service->commune) }}" selected>
+                                            {{ old('service_commune', $service->commune) }}
+                                        </option>
+                                    @endif
+                                </select>
+                                @error('service_commune')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+
+                            <!-- NUEVO CAMPO: Dirección del Servicio -->
+                            <div class="col-md-12">
+                                <label for="service_address" class="form-label">Dirección del Servicio</label>
+                                <input type="text" class="form-control @error('service_address') is-invalid @enderror"
+                                       id="service_address" name="service_address"
+                                       value="{{ old('service_address', $service->address) }}">
+                                @error('service_address')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+
+
                             <div class="col-md-6">
                                 <label for="meter_plan" class="form-label">MIDEPLAN</label>
                                 <select class="form-select @error('meter_plan') is-invalid @enderror" id="meter_plan" name="meter_plan">
@@ -198,6 +241,54 @@ document.addEventListener('DOMContentLoaded', function() {
         activeCheckbox.addEventListener('change', function() {
             activeLabel.textContent = this.checked ? 'Sí' : 'No';
         });
+    }
+});
+
+// AJAX para cargar comunas basado en la región seleccionada
+$(document).ready(function() {
+    $.ajaxSetup({
+        headers: {
+            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+        }
+    });
+
+    // Cuando cambie la región del servicio, cargar las comunas
+    $("#service_state").change(function(e) {
+        var stateId = $(this).val();
+
+        // Limpiar el selector de comunas
+        $('#service_commune').empty();
+        $('#service_commune').append('<option value="">Seleccionar Comuna</option>');
+
+        if (stateId) {
+            $.ajax({
+                url: "{{ url('/ajax') }}/" + stateId + "/comunas-por-region",
+                type: "GET",
+                dataType: "json",
+                beforeSend: function() {
+                    $('#service_commune').prop('disabled', true);
+                },
+                success: function(resultado) {
+                    if (resultado && resultado.length > 0) {
+                        resultado.forEach(function(comuna) {
+                            $('#service_commune').append('<option value="' + comuna.name + '">' + comuna.name + '</option>');
+                        });
+                    }
+                    $('#service_commune').prop('disabled', false);
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error al cargar comunas del servicio:', error);
+                    $('#service_commune').prop('disabled', false);
+                    alert('Error al cargar las comunas del servicio.');
+                }
+            });
+        }
+    });
+
+    // Si hay una región preseleccionada, cargar sus comunas
+    var initialStateId = $('#service_state').val();
+    if (initialStateId) {
+        $('#service_state').trigger('change');
     }
 });
 </script>
