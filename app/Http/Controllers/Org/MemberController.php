@@ -110,8 +110,8 @@ class MemberController extends Controller
                 'string',
                 'unique:members,rut',
                 function ($attribute, $value, $fail) {
-                    $rutLimpio = preg_replace('/[^0-9kK]/', '', strtoupper($value));
-
+                   // $rutLimpio = preg_replace('/[^0-9kK]/', '', strtoupper($value));
+                    $rutLimpio = preg_replace('/[^0-9kK\-]/', '', strtoupper($value));
                     if (Member::where('rut', $rutLimpio)->exists()) {
                         $fail('Este RUT ya está registrado en el sistema.');
                         return;

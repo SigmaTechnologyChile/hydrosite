@@ -47,23 +47,10 @@ class AjaxController extends Controller
     public function checkRut(Request $request)
     {
         $rut = $request->input('rut');
-        // Limpiar el RUT (por si acaso viene con formato)
-        $rutLimpio = preg_replace('/[^0-9kK]/', '', strtoupper($rut));
-        // $exists = Member::where('rut', $rut)->exists();
-
-        // Verificar si existe en la base de datos
+       // $rutLimpio = preg_replace('/[^0-9kK]/', '', strtoupper($rut));
+       $rutLimpio = preg_replace('/[^0-9kK\-]/', '', strtoupper($rut));
         $exists = Member::where('rut', $rutLimpio)->exists();
 
         return response()->json(['exists' => $exists]);
-
-
-        $rut = $request->input('rut');
-
-
-
-        // return response()->json([
-        //     'exists' => $exists,
-        //     'rut' => $rutLimpio
-        // ]);
     }
 }
