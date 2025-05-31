@@ -38,91 +38,90 @@
                                     <label for="partner" class="form-label">Cliente/Socio</label>
                                     <select class="form-select" id="partner" name="partner">
                                         <option value="">Seleccionar...</option>
-                                        <option value="cliente" {{ old('partner') == 'C' ? 'selected' : '' }}>Cliente</option>
-                                        <option value="socio" {{ old('partner') == 'S' ? 'selected' : '' }}>Socio</option>
+                                        <option value="cliente" {{ old('partner') == 'cliente' ? 'selected' : '' }}>Cliente</option>
+                                        <option value="socio" {{ old('partner') == 'socio' ? 'selected' : '' }}>Socio</option>
                                     </select>
-                                </div>
-
-                                <div class="mb-3 row">
-                                    <div class="col-md-6">
-                                        <label for="nombres" class="form-label">Nombres</label>
-                                        <input type="text" class="form-control" id="nombres" name="first_name" required>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <label for="apellidos" class="form-label">Apellidos</label>
-                                        <input type="text" class="form-control" id="apellidos" name="last_name" required>
-                                    </div>
-                                </div>
-
-                                <div class="mb-3">
-                                    <label for="gender" class="form-label">Género</label>
-                                    <select class="form-select" id="gender" name="gender">
-                                        <option value="">Seleccionar...</option>
-                                        <option value="masculino" {{ old('gender') == 'MASCULINO' ? 'selected' : '' }}>
-                                            Masculino</option>
-                                        <option value="femenino" {{ old('gender') == 'FEMENINO' ? 'selected' : '' }}>Femenino
-                                        </option>
-                                        <option value="otro" {{ old('gender') == 'OTRO' ? 'selected' : '' }}>Otro</option>
-                                    </select>
-                                </div>
-
-                                <div class="mb-3">
-                                    <label for="email" class="form-label">Correo electrónico</label>
-                                    <input type="email" class="form-control @error('email') is-invalid @enderror" id="email"
-                                        value="{{ old('email') }}" name="email" required
-                                        pattern="[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}"
-                                        title="Por favor ingrese un correo electrónico válido">
-                                </div>
-                                <div class="mb-3 row">
-                                    <div class="col-md-6">
-                                        <label for="state" class="form-label">Región</label>
-                                        <select class="form-select" id="state" name="state">
-                                            <option value="">Seleccionar Región</option>
-                                            @foreach($states as $state)
-                                                <option value="{{$state->id}}" {{ old('state') == $state->id ? 'selected' : '' }}>
-                                                    {{$state->name_state}}
-                                                </option>
-                                            @endforeach
-                                        </select>
-                                    </div>
-
-                                    <div class="col-md-6">
-                                        <label for="commune" class="form-label">Comuna</label>
-                                        <select class="form-select" id="commune" name="commune">
-                                            <option value="">Seleccionar Comuna</option>
-                                        </select>
-                                    </div>
-                                </div>
-                                <div class="mb-3">
-                                    <label for="direccion" class="form-label">Dirección</label>
-                                    <input type="text" class="form-control" id="direccion" name="address" required>
                                 </div>
                             </div>
+
+                            <div class="mb-3 row">
+                                <div class="col-md-6">
+                                    <label for="nombres" class="form-label">Nombres</label>
+                                    <input type="text" class="form-control" id="nombres" name="first_name" value="{{ old('first_name') }}" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="apellidos" class="form-label">Apellidos</label>
+                                    <input type="text" class="form-control" id="apellidos" name="last_name" value="{{ old('last_name') }}" required>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="gender" class="form-label">Género</label>
+                                <select class="form-select" id="gender" name="gender">
+                                    <option value="">Seleccionar...</option>
+                                    <option value="MASCULINO" {{ old('gender') == 'MASCULINO' ? 'selected' : '' }}>
+                                        Masculino</option>
+                                    <option value="FEMENINO" {{ old('gender') == 'FEMENINO' ? 'selected' : '' }}>Femenino
+                                    </option>
+                                    <option value="OTRO" {{ old('gender') == 'OTRO' ? 'selected' : '' }}>Otro</option>
+                                </select>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="email" class="form-label">Correo electrónico</label>
+                                <input type="email" class="form-control @error('email') is-invalid @enderror" id="email"
+                                    value="{{ old('email') }}" name="email" required
+                                    pattern="[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}"
+                                    title="Por favor ingrese un correo electrónico válido">
+                            </div>
+
+                            <div class="mb-3 row">
+                                <div class="col-md-6">
+                                    <label for="state" class="form-label">Región</label>
+                                    <select class="form-select" id="state" name="state">
+                                        <option value="">Seleccionar Región</option>
+                                        @foreach($states as $state)
+                                            <option value="{{$state->id}}" {{ old('state') == $state->id ? 'selected' : '' }}>
+                                                {{$state->name_state}}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label for="commune" class="form-label">Comuna</label>
+                                    <select class="form-select" id="commune" name="commune">
+                                        <option value="">Seleccionar Comuna</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="direccion" class="form-label">Dirección</label>
+                                <input type="text" class="form-control" id="direccion" name="address" value="{{ old('address') }}" required>
+                            </div>
+
                             <div class="mb-3 row">
                                 <div class="col-md-6">
                                     <label for="mobile_phone" class="form-label">Celular</label>
                                     <div class="input-group">
                                         <span class="input-group-text">+56</span>
-
-                                        <input type="tel" class="form-control" id="mobile_phone" name="mobile_phone" required>
+                                        <input type="tel" class="form-control" id="mobile_phone" name="mobile_phone" value="{{ old('mobile_phone') }}" required>
                                     </div>
                                 </div>
                                 <div class="col-md-6">
                                     <label for="phone" class="form-label">Teléfono fijo</label>
                                     <div class="input-group">
                                         <span class="input-group-text">+56</span>
-
-                                        <input type="tel" class="form-control" id="phone" name="phone">
+                                        <input type="tel" class="form-control" id="phone" name="phone" value="{{ old('phone') }}">
                                     </div>
                                 </div>
                             </div>
-
                         </div>
 
                         <!-- Columna derecha - Servicios -->
                         <div class="col-md-6 ps-md-4">
-                            <h5 class="text-primary mb-3">Información de Servicios <span
-                                    class="text-muted fs-6 fw-normal"></span></h5>
+                            <h5 class="text-primary mb-3">Información de Servicios</h5>
 
                             <div class="row mb-3">
                                 <div class="col-md-6">
@@ -150,15 +149,17 @@
                                 <input type="text" class="form-control" id="service_address" name="service_address"
                                     value="{{ old('service_address') }}">
                             </div>
+
                             <div class="mb-3">
                                 <label for="locality_id" class="form-label">Sector</label>
                                 <select class="form-select" id="locality_id" name="locality_id">
                                     <option value="">Seleccione el sector</option>
                                     @foreach($locations as $location)
-                                        <option value="{{$location->id}}">{{$location->name}}</option>
+                                        <option value="{{$location->id}}" {{ old('locality_id') == $location->id ? 'selected' : '' }}>{{$location->name}}</option>
                                     @endforeach
                                 </select>
                             </div>
+
                             <div class="row">
                                 <div class="col-md-6 mb-3">
                                     <label for="meter_plan" class="form-label">MIDEPLAN</label>
@@ -171,10 +172,11 @@
                                 <div class="col-md-6 mb-3">
                                     <label for="percentage" class="form-label">Porcentaje</label>
                                     <div class="input-group">
-                                        <input type="number" class="form-control" id="percentage" name="percentage" min="0"
-                                            max="100" value="{{ old('percentage') }}">
+                                        <input type="number" class="form-control" id="percentage" name="percentage"
+                                               min="0" max="100" value="{{ old('percentage', 0) }}" readonly>
                                         <span class="input-group-text">%</span>
                                     </div>
+
                                 </div>
                             </div>
 
@@ -216,6 +218,7 @@
                                     </select>
                                 </div>
                             </div>
+
                             <div class="mb-3">
                                 <label for="observations" class="form-label">Observaciones</label>
                                 <textarea class="form-control" id="observations" name="observations"
@@ -235,6 +238,7 @@
                         <button type="submit" class="btn btn-primary">Añadir cliente</button>
                     </div>
                 </form>
+
                 @if(session('error'))
                     <div class="alert alert-danger alert-dismissible fade show" role="alert">
                         <i class="bi bi-exclamation-triangle me-1"></i>
@@ -254,40 +258,79 @@
         </div>
     </section>
 @endsection
+
 @section('js')
     <script>
        document.addEventListener('DOMContentLoaded', function () {
     const activoCheckbox = document.getElementById('activo');
     const serviceSection = document.querySelector('.col-md-6.ps-md-4');
     const submitButton = document.querySelector('button[type="submit"]');
+    const meterPlanSelect = document.getElementById('meter_plan');
+    const percentageInput = document.getElementById('percentage');
     const form = document.getElementById('newMemberForm');
+
+    function togglePercentageField() {
+        const meterPlanValue = meterPlanSelect.value;
+
+
+        if (meterPlanValue === '1') {
+            percentageInput.readOnly = false;
+            percentageInput.required = true;
+            percentageInput.style.backgroundColor = '';
+            percentageInput.style.cursor = 'text';
+            if (percentageInput.value === '0' || percentageInput.value === '') {
+                percentageInput.value = '';
+            }
+            console.log('Percentage habilitado');
+        } else {
+            percentageInput.readOnly = true;
+            percentageInput.required = false;
+            percentageInput.value = '0';
+            percentageInput.style.backgroundColor = '#f8f9fa';
+            percentageInput.style.cursor = 'not-allowed';
+        }
+    }
 
     function toggleServiceFields() {
         if (activoCheckbox.checked) {
             serviceSection.style.display = 'block';
             serviceSection.style.opacity = '1';
+            const serviceInputs = serviceSection.querySelectorAll('input, select, textarea');
+            serviceInputs.forEach(input => {
+                if (input.id !== 'percentage') {
+                    input.disabled = false;
+                }
+            });
         } else {
             serviceSection.style.display = 'block';
             serviceSection.style.opacity = '0.5';
-            // Limpiar campos cuando se desmarca
+            const serviceInputs = serviceSection.querySelectorAll('input, select, textarea');
+            serviceInputs.forEach(input => {
+                input.disabled = true;
+            });
             clearServiceFields();
         }
+
+        togglePercentageField();
     }
 
     function clearServiceFields() {
         const serviceInputs = serviceSection.querySelectorAll('input, select, textarea');
         serviceInputs.forEach(input => {
             if (input.type !== 'checkbox') {
-                input.value = '';
+                if (input.id === 'percentage') {
+                    input.value = '0';
+                } else {
+                    input.value = '';
+                }
             }
         });
     }
 
     function validateServiceFields() {
-        // Si el checkbox no está marcado, no validar nada
         if (!activoCheckbox.checked) return true;
 
-        // Solo verificar que los campos principales no estén vacíos
+
         const criticalFields = ['locality_id', 'meter_plan', 'meter_type', 'meter_number', 'invoice_type', 'diameter'];
 
         for (let fieldName of criticalFields) {
@@ -298,37 +341,51 @@
             }
         }
 
+        if (meterPlanSelect.value === '1') {
+            const percentageValue = parseInt(percentageInput.value);
+            if (isNaN(percentageValue) || percentageValue < 1 || percentageValue > 100) {
+                alert('Cuando MIDEPLAN es "Sí", el porcentaje debe ser un valor entre 1 y 100.');
+                return false;
+            }
+        }
+
         return true;
     }
 
 
-    // Event listeners
     activoCheckbox.addEventListener('change', toggleServiceFields);
+    meterPlanSelect.addEventListener('change', togglePercentageField);
 
     form.addEventListener('submit', function (e) {
+
+        if (meterPlanSelect.value !== '1') {
+            percentageInput.value = '0';
+        }
+
         if (!validateServiceFields()) {
             e.preventDefault();
         }
     });
 
-    // Inicializar
+
     toggleServiceFields();
+    togglePercentageField();
 });
 
-// NUEVO: Cargar comunas directamente desde regiones (sin provincias)
+// CARGAR COMUNAS
 $(document).ready(function () {
-    // Configuración global para AJAX
+
     $.ajaxSetup({
         headers: {
             'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
         }
     });
 
-    // Cuando cambie la región de datos personales, cargar las comunas
+
     $("#state").change(function (e) {
         var stateId = $(this).val();
 
-        // Limpiar el selector de comunas
+
         $('#commune').empty();
         $('#commune').append('<option value="">Seleccionar Comuna</option>');
 
@@ -361,11 +418,11 @@ $(document).ready(function () {
         }
     });
 
-    // NUEVO: Cuando cambie la región del servicio, cargar las comunas del servicio
+
     $("#service_state").change(function (e) {
         var stateId = $(this).val();
 
-        // Limpiar el selector de comunas del servicio
+
         $('#service_commune').empty();
         $('#service_commune').append('<option value="">Seleccionar Comuna</option>');
 
@@ -397,69 +454,70 @@ $(document).ready(function () {
             });
         }
     });
-$('#rut').on('blur', function () {
-    const rut = $(this).val();
-    if (rut && rut.length > 8) {
-        // Limpiar RUT para enviar al servidor
-        const rutLimpio = rut.replace(/[^0-9kK]/g, '').toUpperCase();
 
-        $.ajax({
-            url: '{{ url("/ajax/check-rut") }}',
-            type: 'POST',
-            data: {
-                '_token': '{{ csrf_token() }}',
-                'rut': rutLimpio
-            },
-            success: function (response) {
-                if (response.exists) {
-                    $('#rut').addClass('is-invalid');
-                    $('#rut-error').text('Este RUT ya está registrado en el sistema.');
-                    // Deshabilitar el botón de envío
-                    $('button[type="submit"]').prop('disabled', true);
-                } else {
-                    $('#rut').removeClass('is-invalid');
-                    $('#rut-error').text('');
-                    // Habilitar el botón de envío
-                    $('button[type="submit"]').prop('disabled', false);
+
+    $('#rut').on('blur', function () {
+        const rut = $(this).val();
+        if (rut && rut.length > 8) {
+
+            const rutLimpio = rut.replace(/[^0-9kK]/g, '').toUpperCase();
+
+            $.ajax({
+                url: '{{ url("/ajax/check-rut") }}',
+                type: 'POST',
+                data: {
+                    '_token': '{{ csrf_token() }}',
+                    'rut': rutLimpio
+                },
+                success: function (response) {
+                    if (response.exists) {
+                        $('#rut').addClass('is-invalid');
+                        $('#rut-error').text('Este RUT ya está registrado en el sistema.');
+
+                        $('button[type="submit"]').prop('disabled', true);
+                    } else {
+                        $('#rut').removeClass('is-invalid');
+                        $('#rut-error').text('');
+
+                        $('button[type="submit"]').prop('disabled', false);
+                    }
+                },
+                error: function() {
+                    console.log('Error al verificar RUT');
                 }
-            },
-            error: function() {
-                console.log('Error al verificar RUT');
-            }
-        });
-    }
-});
-
+            });
+        }
+    });
 });
 
 function validarInputRut(input) {
     let valor = input.value.toLowerCase();
 
-    // Remover todo lo que no sea número ni 'k'
+
     valor = valor.replace(/[^0-9k]/g, '');
 
-    // Asegurar que solo haya una 'k' y solo al final
+
     let kIndex = valor.indexOf('k');
     if (kIndex !== -1 && kIndex !== valor.length - 1) {
-        // Si hay una 'k' en medio, elimínala
+
         valor = valor.replace(/k/g, '');
     } else if ((valor.match(/k/g) || []).length > 1) {
-        // Si hay más de una 'k', dejamos solo la última
+
         valor = valor.replace(/k/g, '');
         valor += 'k';
     }
 
-    // Si hay más de un carácter, formatear
+
     if (valor.length > 1) {
         let cuerpo = valor.slice(0, -1);
         let dv = valor.slice(-1);
 
-        // Validar que el dígito verificador sea número o 'k'
+
         if (!/[0-9k]/.test(dv)) {
             dv = '';
         }
 
-        // Formatear puntos
+
         cuerpo = cuerpo.replace(/\./g, '');
         let cuerpoFormateado = '';
         let count = 0;
@@ -477,7 +535,7 @@ function validarInputRut(input) {
         input.value = valor;
     }
 
-    // Validación
+
     if (input.value.length > 3) {
         if (!validarRut(input.value)) {
             $('#rut-error').text('RUT inválido');
@@ -513,7 +571,5 @@ function validarRut(rutCompleto) {
 
     return dv === dvEsperado;
 }
-
-
     </script>
 @endsection

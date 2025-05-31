@@ -5,7 +5,6 @@ use App\Exports\MembersExport;
 use App\Http\Controllers\Controller;
 use App\Models\Location;
 use App\Models\Member;
-use App\Models\MemberService;
 use App\Models\Org;
 use App\Models\OrgMember;
 use App\Models\Service;
@@ -38,7 +37,6 @@ class MemberController extends Controller
         $members = Member::join('orgs_members', 'members.id', 'orgs_members.member_id')
             ->leftjoin('services', 'members.rut', 'services.rut')
             ->where('orgs_members.org_id', $org->id)
-            //->where('services.org_id',$org->id)
             ->when($sector, function ($q) use ($sector) {
                 $q->where('services.locality_id', $sector);
             })
@@ -104,7 +102,6 @@ class MemberController extends Controller
     public function store(Request $request, $orgId)
     {
 
-         dd($request->all());
         $org = $this->org;
 
         $rules = [
@@ -113,13 +110,12 @@ class MemberController extends Controller
                 'string',
                 'unique:members,rut',
                 function ($attribute, $value, $fail) {
-                    // Limpiar el RUT
                     $rutLimpio = preg_replace('/[^0-9kK]/', '', strtoupper($value));
 
-                     if (Member::where('rut', $rutLimpio)->exists()) {
-                    $fail('Este RUT ya está registrado en el sistema.');
-                    return;
-                }
+                    if (Member::where('rut', $rutLimpio)->exists()) {
+                        $fail('Este RUT ya está registrado en el sistema.');
+                        return;
+                    }
 
                     if (strlen($rutLimpio) < 8 || strlen($rutLimpio) > 9) {
                         $fail('El RUT debe tener entre 8 y 9 caracteres (incluyendo dígito verificador).');
@@ -132,7 +128,6 @@ class MemberController extends Controller
                     }
 
                     $cuerpo = substr($rutLimpio, 0, -1);
-                    //  $dv = substr($rutLimpio, -1);
 
                     if (!ctype_digit($cuerpo)) {
                         $fail('El cuerpo del RUT debe contener solo números.');
@@ -145,7 +140,6 @@ class MemberController extends Controller
                         return;
                     }
 
-                    // Validar algoritmo chileno
                     $suma = 0;
                     $multiplo = 2;
 
@@ -164,10 +158,6 @@ class MemberController extends Controller
                         $dvCalculado = (string) $dvEsperado;
                     }
 
-                    // if ($dv !== $dvCalculado) {
-                    //     $fail("El RUT '$rutLimpio' no es válido. El dígito verificador correcto es '$dvCalculado'.");
-                    //     return;
-                    // }
                 },
             ],
             'first_name' => 'required',
@@ -191,7 +181,21 @@ class MemberController extends Controller
                 'service_commune' => 'required|string|max:100',
                 'service_address' => 'required|string|max:255',
                 'meter_plan' => 'required|in:1,0',
-                'percentage' => 'required|numeric|min:1|max:100',
+                'percentage' => [
+                    'required',
+                    'numeric',
+                    'min:0',
+                    'max:100',
+                    function ($attribute, $value, $fail) use ($request) {
+                        $meterPlan = $request->input('meter_plan');
+                        if ($meterPlan == '1' && ($value < 1 || $value > 100)) {
+                            $fail('Cuando MIDEPLAN es "Sí", el porcentaje debe ser entre 1 y 100.');
+                        }
+                        if ($meterPlan == '0' && $value != 0) {
+                            $fail('Cuando MIDEPLAN es "No", el porcentaje debe ser 0.');
+                        }
+                    }
+                ],
                 'meter_type' => 'required',
                 'meter_number' => 'required',
                 'invoice_type' => 'required',
@@ -201,20 +205,25 @@ class MemberController extends Controller
         }
 
         $validated = $request->validate($rules);
-
-        //$state = State::findOrFail($validated['service_state']);
         $state = State::findOrFail($validated['state']);
         $stateName = $state->name_state;
 
-        $validated['rut'] = preg_replace('/[^0-9kK]/', '', strtoupper($validated['rut']));
-        // Crear el miembro
+        $rutLimpio = preg_replace('/[^0-9kK]/', '', strtoupper($validated['rut']));
+
+
         $member = new Member();
-        $member->rut = $validated['rut'];
+
+        $rutLimpio = preg_replace('/[^0-9kK]/', '', strtoupper($validated['rut']));
+
+        $cuerpo = substr($rutLimpio, 0, -1);
+        $dv = substr($rutLimpio, -1);
+        $rutFormateado = $cuerpo . '-' . $dv;
+        $member->rut = $rutFormateado;
         $member->first_name = strtoupper($validated['first_name']);
         $member->last_name = strtoupper($validated['last_name']);
         $member->full_name = $member->first_name . ' ' . $member->last_name;
-        $member->city_id = $validated['state'];   // Guardar ID de región en city_id
-        $member->commune = $validated['commune']; // Guardar comuna como string
+        $member->city_id = $validated['state'];
+        $member->commune = $validated['commune'];
         $member->gender = $validated['gender'];
         $member->email = $validated['email'];
         $member->address = strtoupper($validated['address']);
@@ -225,40 +234,47 @@ class MemberController extends Controller
         $member->active = $validated['activo'] ?? 1;
         $member->save();
 
-                // ✅ CREAR RELACIÓN ORG-MEMBER DENTRO DE LA TRANSACCIÓN
-                $orgMember = new OrgMember();
-                $orgMember->org_id = $org->id;
-                $orgMember->member_id = $member->id;
-                $orgMember->save();
 
-     if ($request->has('activo') && $request->input('activo') == 1) {
-        DB::transaction(function () use ($org, $member, $validated, $request) {
-               // Obtener el último 'nro' con bloqueo para evitar duplicados
-            $lastServiceNro = Service::where('org_id', $org->id)
-            ->lockForUpdate()
-            ->max('nro');
+        $orgMember = new OrgMember();
+        $orgMember->org_id = $org->id;
+        $orgMember->member_id = $member->id;
+        $orgMember->save();
 
-        // Convertir a número y sumar 1
-        $newNroNumber = $lastServiceNro ? (int)$lastServiceNro + 1 : 1;
-        $newNro = (string)$newNroNumber;
+        if ($request->has('activo') && $request->input('activo') == 1) {
+            DB::transaction(function () use ($org, $member, $validated, $request) {
 
-        // Verificar que no exista (por seguridad)
-        while (Service::where('nro', $newNro)->where('org_id', $org->id)->exists()) {
-            $newNroNumber++;
-            $newNro = (string)$newNroNumber;
-        }
+                $lastServiceNro = Service::where('org_id', $org->id)
+                    ->lockForUpdate()
+                    ->max('nro');
+
+
+                $newNroNumber = $lastServiceNro ? (int) $lastServiceNro + 1 : 1;
+                $newNro = (string) $newNroNumber;
+
+
+                while (Service::where('nro', $newNro)->where('org_id', $org->id)->exists()) {
+                    $newNroNumber++;
+                    $newNro = (string) $newNroNumber;
+                }
 
                 $serviceState = State::findOrFail($validated['service_state']);
                 $serviceStateName = $serviceState->name_state;
+
+
+                $rutLimpio = preg_replace('/[^0-9kK]/', '', strtoupper($validated['rut']));
+
+                $cuerpo = substr($rutLimpio, 0, -1);
+                $dv = substr($rutLimpio, -1);
+                $rutFormateado = $cuerpo . '-' . $dv;
 
                 $service = new Service();
                 $service->member_id = $member->id;
                 $service->org_id = $org->id;
                 $service->nro = $newNro;
-                $service->rut = $validated['rut'];
+                $service->rut = $rutFormateado;
                 $service->commune = $validated['service_commune'];
                 $service->address = strtoupper($validated['service_address']);
-                $service->state = $serviceStateName;            // Guardar nombre de región como string
+                $service->state = $serviceStateName;
                 $service->locality_id = $validated['locality_id'];
                 $service->meter_plan = $validated['meter_plan'];
                 $service->percentage = $validated['percentage'];
@@ -291,7 +307,7 @@ class MemberController extends Controller
             $city = State::find($member->city_id);
         }
 
-        // Obtener servicios con join a locations para obtener nombres de sectores
+
         $services = Service::where('member_id', $memberId)
             ->leftJoin('locations', 'services.locality_id', '=', 'locations.id')
             ->select(
@@ -301,9 +317,6 @@ class MemberController extends Controller
             ->get();
 
         $states = State::all();
-
-        // Elimina el dd() para producción
-        // dd($services);
 
         return view('orgs.members.edit', compact('org', 'member', 'services', 'states', 'city'));
     }
@@ -327,14 +340,19 @@ class MemberController extends Controller
         $org = Org::findOrFail($orgId);
         $member = Member::findOrFail($memberId);
 
-        $member->rut = $validated['rut'];
+        $rutLimpio = preg_replace('/[^0-9kK]/', '', strtoupper($validated['rut']));
+        $cuerpo = substr($rutLimpio, 0, -1);
+        $dv = substr($rutLimpio, -1);
+        $member->rut = $cuerpo . '-' . $dv;
+
+
         $member->first_name = strtoupper($validated['first_name']);
         $member->last_name = strtoupper($validated['last_name']);
         $member->full_name = $member->first_name . ' ' . $member->last_name;
         $member->address = $validated['address'];
         $member->email = $validated['email'];
         $member->gender = $validated['gender'];
-        $member->city_id = $validated['state']; // Guardamos la región en city_id
+        $member->city_id = $validated['state'];
         $member->commune = $validated['commune'];
         $member->mobile_phone = '+56' . ltrim($validated['mobile_phone'], '0');
         $member->phone = '+56' . ltrim($validated['phone'], '0');
@@ -351,7 +369,7 @@ class MemberController extends Controller
         try {
 
             $request->validate([
-                'new_rut' => 'required|exists:members,rut', // Validar que el nuevo RUT exista en la tabla de miembros
+                'new_rut' => 'required|exists:members,rut',
             ]);
 
             $org = Org::findOrFail($orgId);
@@ -377,22 +395,46 @@ class MemberController extends Controller
         }
     }
 
-public function editService($orgId, $memberId, $serviceId)
-{
-    $org = Org::findOrFail($orgId);
-    $member = Member::findOrFail($memberId);
-    $service = Service::findOrFail($serviceId);
+ public function editService($orgId, $memberId, $serviceId)
+    {
+        $org = Org::findOrFail($orgId);
+        $member = Member::findOrFail($memberId);
 
-    $sectors = Location::where('org_id', $orgId)->get();
-    $states = State::orderBy('name_state')->get();
+        $service = Service::where('services.id', $serviceId)
+            ->where('services.member_id', $memberId)
+            ->leftJoin('locations', 'services.locality_id', '=', 'locations.id')
+            ->select(
+                'services.*',
+                'locations.name as sector_name'
+            )
+            ->first();
 
-    return view('orgs.members.editservice', compact('org', 'member', 'service', 'sectors', 'states'));
-}
+        if (!$service) {
+            return redirect()->back()->with('error', 'Servicio no encontrado.');
+        }
+
+        $sectors = Location::where('org_id', $orgId)->get();
+        $states = State::orderBy('name_state')->get();
+
+
+        $serviceStateId = null;
+        if ($service->state) {
+            $serviceState = State::where('name_state', $service->state)->first();
+            $serviceStateId = $serviceState ? $serviceState->id : null;
+        }
+
+        $city = null;
+        if ($member->city_id) {
+            $city = State::find($member->city_id);
+        }
+
+        return view('orgs.members.editservice', compact('org', 'member', 'service', 'sectors', 'states', 'city', 'serviceStateId'));
+    }
 
     public function updateService(Request $request, $orgId, $memberId, $serviceId)
     {
         $validated = $request->validate([
-            'sector' => 'required|exists:locations,id', // Cambiar a validar que existe en locations
+            'sector' => 'required|exists:locations,id',
             'meter_plan' => 'required|in:0,1',
             'percentage' => 'nullable|numeric|min:0|max:100',
             'meter_type' => 'required|in:analogico,digital',
@@ -400,28 +442,25 @@ public function editService($orgId, $memberId, $serviceId)
             'invoice_type' => 'required|in:boleta,factura',
             'diameter' => 'required|in:1/2,3/4',
             'service_state' => 'required|exists:states,id',
-        'service_commune' => 'required|string|max:100',
-        'service_address' => 'required|string|max:255',
+            'service_commune' => 'required|string|max:100',
+            'service_address' => 'required|string|max:255',
         ]);
 
         $service = Service::findOrFail($serviceId);
 
-        // Obtener el nombre del sector desde la tabla locations
         $location = Location::findOrFail($validated['sector']);
 
 
-         $serviceState = State::findOrFail($validated['service_state']);
-    $serviceStateName = $serviceState->name_state;
+        $serviceState = State::findOrFail($validated['service_state']);
+        $serviceStateName = $serviceState->name_state;
 
-    $service->state = $serviceStateName;
-        // Guardar correctamente ambos campos
-        $service->locality_id = $validated['sector'];  // ID del sector
-        $service->sector = $location->name;           // Nombre del sector
-$service->commune = $validated['service_commune'];
-    $service->address = strtoupper($validated['service_address']);
+        $service->state = $serviceStateName;
+        $service->locality_id = $validated['sector'];
+        $service->sector = $location->name;
+        $service->commune = $validated['service_commune'];
+        $service->address = strtoupper($validated['service_address']);
         $service->meter_plan = (int) $validated['meter_plan'];
 
-        // Manejo del porcentaje
         if ($validated['meter_plan'] == 1) {
             $service->percentage = $validated['percentage'] ?? 0;
         } else {
@@ -442,14 +481,14 @@ $service->commune = $validated['service_commune'];
 
     public function toggleStatus($orgId, $memberId, $serviceId)
     {
-        // Buscar el servicio por su ID
+
         $service = Service::findOrFail($serviceId);
 
-        // Cambiar el estado del servicio (activo/desactivado)
+
         $service->active = !$service->active;
         $service->save();
 
-        // Redirigir de vuelta al detalle del miembro con un mensaje de éxito
+
         return redirect()->route('orgs.members.edit', [$orgId, $memberId])
             ->with('success', 'Estado del servicio actualizado exitosamente.');
     }
