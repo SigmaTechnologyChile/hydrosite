@@ -49,8 +49,8 @@
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                     </div>
-                     <!-- ✅ NUEVOS CAMPOS: Región y Comuna del Servicio -->
-          <div class="mb-3 col-md-6">
+
+          <div class="mb-3 col-md-3">
             <label for="service_state" class="form-label">Región del Servicio</label>
             <select class="form-select @error('service_state') is-invalid @enderror" id="service_state" name="service_state">
                 <option value="">Seleccionar Región</option>
@@ -66,7 +66,7 @@
             @enderror
           </div>
 
-          <div class="mb-3 col-md-6">
+          <div class="mb-3 col-md-3">
             <label for="service_commune" class="form-label">Comuna del Servicio</label>
             <select class="form-select @error('service_commune') is-invalid @enderror" id="service_commune" name="service_commune">
                 <option value="">Seleccionar Comuna</option>
@@ -76,10 +76,9 @@
             @enderror
           </div>
 
-          <!-- ✅ NUEVO CAMPO: Dirección del Servicio -->
           <div class="mb-3 col-md-6">
             <label for="service_address" class="form-label">Dirección del Servicio</label>
- <input type="text" class="form-control @error('service_address') is-invalid @enderror"
+            <input type="text" class="form-control @error('service_address') is-invalid @enderror"
                                        id="service_address" name="service_address"
                                        value="{{ old('service_address', $service->address) }}" required>
             @error('service_address')
