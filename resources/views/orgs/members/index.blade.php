@@ -46,7 +46,7 @@
                                     <span class="input-group-text border-0 bg-white ps-4">
                                         <i class="bi bi-search fs-5 text-primary"></i>
                                     </span>
-                                    <input type="text" name="search" class="form-control rounded-end-3" placeholder="Buscar por nombre, apellido, sector" value="{{ request('search') }}">
+                                    <input type="text" name="search" class="form-control rounded-end-3" placeholder="Buscar por nombre o apellido" value="{{ request('search') }}">
                                 </div>
                             </div>
 
