@@ -16,7 +16,7 @@
                                 <a href="{{ route('orgs.dashboard', $org->id) }}" class="nav-link @if($active=='dashboard') active @endif" id="orgs-dashboard">Dashboard</a>
                               </li>
                               <li class="nav-item">
-                                <a href="{{ route('orgs.members.create', $org->id) }}" class="nav-link @if($active=='members') active @endif" id="orgs-members">Nuevo Cliente</a>
+                                <a href="{{ route('orgs.members.create', $org->id) }}" class="nav-link @if($active=='members') active @endif" id="orgs-members">Agregar Cliente</a>
                               </li>
                               <li class="nav-item d-none">
                                 <a href="{{ route('orgs.services.index', $org->id) }}" class="nav-link @if($active=='services') active @endif" id="orgs-members">Servicios</a>
@@ -44,7 +44,7 @@
                     </nav>
                 </div>
             </div>
-        </div>   
+        </div>
         <div class="col-6">
             <div class="card">
                 <h5 class="card-header">M��dulos</h5>

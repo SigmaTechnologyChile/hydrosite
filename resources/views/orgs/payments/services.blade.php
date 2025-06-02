@@ -21,12 +21,13 @@
             </div>
             <form method="POST" action="{{ route('orgs.orders.store', $org->id) }}">
             @csrf
-             
+
             <div class="table-responsive">
               <table class="table table-hover align-middle">
                 <thead class="table-light">
                   <tr>
                     <th scope="col">N° Servicio</th>
+                     <th scope="col">N° Lectura</th>
                     <th scope="col">Nombre del Sector</th>
                     <th scope="col">Estado</th>
                     <th scope="col">Total ($)</th>
@@ -37,8 +38,10 @@
                   @foreach($services as $service)
                   <tr>
                     <td><span class="badge bg-info" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-original-title="ID unico interno # {{ $service->id }}">{{ Illuminate\Support\Str::padLeft($service->nro,5,0) }}</span></td>
+                     <td><span >{{  $service->id}}</span></td>
+
                     <td>{{ ucwords(str_replace('_', ' ', strtolower($service->sector))) }}</td>
-                    
+
                     <td>
                         @if($service->total_amount)
                             <span class="badge bg-warning ">Pendiente de pago</span>
@@ -57,7 +60,7 @@
                 </tbody>
               </table>
             </div>
-            
+
             <div class="mt-3">
               <strong>Total Seleccionado: </strong>
               <span id="totalAmount">$0</span>
@@ -66,7 +69,7 @@
             <!-- Bloque de forma de pago deshabilitado inicialmente -->
             <div class="mt-4 text-center" id="paymentMethods" style="display:none;">
               <label class="form-label d-block mb-3"><strong>Seleccione la forma de pago:</strong></label>
-              
+
               <div class="d-inline-flex justify-content-center gap-3">
                 <div>
                   <input type="radio" class="btn-check" name="payment_method_id" id="pos" value="1" autocomplete="off" required>
@@ -86,9 +89,9 @@
             <div class="d-grid gap-2 mt-4">
                 <button type="submit" class="btn btn-primary" id="payButton" disabled>Continuar</button>
             </div>
-            
+
           </form>
-    
+
         </div>
       </div>
     </div>
@@ -101,7 +104,7 @@
           document.querySelectorAll('.service-checkbox:checked').forEach(function(checkedBox) {
             totalAmount += parseFloat(checkedBox.getAttribute('data-total'));
           });
-          
+
           // Mostrar el total
           document.getElementById('totalAmount').textContent = totalAmount.toLocaleString('es-CL', { style: 'currency', currency: 'CLP' });
 

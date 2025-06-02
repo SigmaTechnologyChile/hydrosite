@@ -423,12 +423,12 @@
                 @if($active == 'orgs.members.create')
                 <a class="nav-link" href="{{route('orgs.members.create',$org->id)}}">
                  <i class="bi bi-people"></i>
-                  <span>Nuevo Cliente </span>
+                  <span>Agregar Cliente </span>
                 </a>
                 @else
                 <a class="nav-link collapsed" href="{{route('orgs.members.create',$org->id)}}">
                   <i class="bi bi-people"></i>
-                  <span>Nuevo Cliente </span>
+                  <span>Agregar Cliente </span>
                 </a>
                 @endif
             </li>
