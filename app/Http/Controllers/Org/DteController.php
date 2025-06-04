@@ -12,12 +12,13 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Token;
 use App\Models\Reading;
+use App\Models\Service;
 
 class DteController extends Controller
 {
     protected $_param;
     public $org;
-    
+
     public function __construct()
     {
         $this->middleware('auth');
@@ -39,7 +40,7 @@ class DteController extends Controller
         // Datos del lugar (por ejemplo, dirección de la tienda)
         $storeName = "Tienda Ejemplo";
         $storeAddress = "Dirección 123, Ciudad, País";
-        
+
         // Datos del pago
         $paymentMethod = $order->payment_method ?? 'Efectivo';
         $totalAmount = $order->total;
@@ -47,23 +48,25 @@ class DteController extends Controller
         $commission = $order->commission;
         $iva = $order->iva;
 
-       
-        $response = ['status' => 'success', 'message' => 'Voucher generado correctamente']; 
-        
+
+        $response = ['status' => 'success', 'message' => 'Voucher generado correctamente'];
+        $memberIds = $orderItems->pluck('member_id')->unique();
+        $services = Service::whereIn('member_id', $memberIds)->get()->keyBy('member_id');
+
         // Pasar los datos a la vista
         return view('orgs.vouchers.show', compact(
-            'order', 'orderItems', 'paymentMethod', 'totalAmount','subtotal', 
-            'commission', 'iva', 'storeName', 'storeAddress','response', 'org' ));// ¡Esto es lo que faltaba!
+            'order', 'orderItems', 'paymentMethod', 'totalAmount','subtotal',
+            'commission', 'iva', 'storeName', 'storeAddress','response', 'org','services' ));// ¡Esto es lo que faltaba!
     }
 
 	public function dte_create($org_id, $reading_id)
 	{
 	    try {
     	    $reading = Reading::find($reading_id);
-    
+
             if($reading->total > 0 AND $reading->folio > 0){
                 $token = (new SimpleFacturaController)->token($org_id);
-                
+
                 if($reading->invoice_type =='boleta'){
                     $data = $this->boleta($reading);
                 }elseif($reading->invoice_type =='factura'){
@@ -76,7 +79,7 @@ class DteController extends Controller
                 if($response->data){
                     $reading->invoice_dte_type = $response->data->tipoDTE;
                     $reading->invoice_date = Carbon::parse($response->data->fechaEmision)->format('Y-m-d');
-                    $reading->folio = $response->data->folio; 
+                    $reading->folio = $response->data->folio;
                 }
                 $reading->invoice_message = $response->message;
                 $reading->save();
@@ -88,12 +91,12 @@ class DteController extends Controller
             return response()->json(['message'=>'payment not found!'.$e], 404);
         }
 	}
-	
+
 	public function dte_bell($org_id, $reading_id)
 	{
 	    try {
     	    $reading = Reading::find($reading_id);
-    
+
             if($reading->total > 0 AND $reading->folio > 0){
                 $token = (new SimpleFacturaController)->token($org_id);
                 $codeTypeDte = ($reading->invoice_type=='factura'? 33 : 41);
@@ -124,7 +127,7 @@ class DteController extends Controller
             return response()->json(['message'=>'payment not found!'.$e], 404);
         }
 	}
-	
+
 	private function boleta($reading)
 	{
         return '{
@@ -167,7 +170,7 @@ class DteController extends Controller
                     }
                 }';
 	}
-	
+
 	private function factura($reading)
 	{
         return '{
