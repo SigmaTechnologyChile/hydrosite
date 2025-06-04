@@ -27,7 +27,7 @@
                 <thead class="table-light">
                   <tr>
                     <th scope="col">N° Servicio</th>
-                     <th scope="col">N° Lectura</th>
+                     <th scope="col">Id Servicio</th>
                     <th scope="col">Nombre del Sector</th>
                     <th scope="col">Estado</th>
                     <th scope="col">Total ($)</th>
