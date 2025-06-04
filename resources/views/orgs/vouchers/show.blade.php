@@ -17,7 +17,7 @@
                 <div class="mb-3">
                     <h5 class="fw-bold">Detalle del Pago Folio: {{$item->folio}}</h5>
                     <div class="row">
-                        <div class="col-6">
+                        <div class="col-12">
                             <p><strong>Pago realizado con:</strong>
                                 @if($order->payment_method_id == 1)
                                     <span class="badge bg-success">POS</span>
@@ -31,28 +31,27 @@
                             </p>
 
                         </div>
-                        <div class="col-6">
-                            @php
-                                $reading = $readings[$item->member_id] ?? null;
-                            @endphp
-                            <p><strong>Descuento:</strong>
-                                @if($reading && $reading->v_subs > 0)
-                                    <span class="text-success">${{ number_format($reading->v_subs, 0, ',', '.') }}</span>
-                                @else
-                                    <span class="text-muted">No aplica</span>
-                                @endif
-                            </p>
-                        </div>
+
                         <div class="col-6">
                             <p><strong>Costo Servicio:</strong> <span
                                     class="fw-bold text-danger">@money($order->commission)</span></p>
                         </div>
-                        <div class="col-6">
+                        <div class="col-6 text-end">
                             <p><strong>Total: </strong> <span class="fw-bold text-danger">@money($item->total)</span></p>
                         </div>
                     </div>
                 </div>
             @endforeach
+
+
+              <div class="row mt-4">
+    <div class="col-12 text-end">
+        <hr>
+        <p class="mb-1"><strong style="font-size: 1.2rem;">Total pagado:</strong></p>
+        <p class="fw-bold text-danger" style="font-size: 1.5rem;">@money($order->total)</p>
+    </div>
+</div>
+
             <hr class="my-4">
 
             <div class="mb-3">
