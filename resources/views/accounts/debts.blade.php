@@ -14,7 +14,7 @@
         </nav>
       </div>
     </div><!-- End Page Title -->
-    
+
     <!-- Contact Section -->
     <section id="contact" class="contact section light-background">
 
@@ -31,24 +31,46 @@
         <div class="row gy-4">
           <div class="col-lg-12">
                 <div class="table-responsive">
-                    <table class="table">
-                      <thead>
-                        <tr>
-                          <th scope="col">No. de servicio</th>
-                          <th scope="col">Vencimiento</th>
-                          <th scope="col">Monto</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                          @foreach($services as $service)
-                        <tr>
-                          <th scope="row">{{ Illuminate\Support\Str::padLeft($service->nro,5,0) }}</th>
-                          <td>{{$service->period}} @if($service->total_amount)<span class="badge bg-warning text-dark">{{$service->payment_status}}</span>@else {{$service->payment_status}} @endif</td>
-                          <td>@money($service->total_amount) @if($service->total_amount) <input type="checkbox" class="service-checkbox" data-total="{{ $service->total_amount }}" id="exampleCheck1" value="{{ $service->id }}" name="services[]">@endif</td>
-                        </tr>
-                        @endforeach
-                      </tbody>
-                    </table>
+                   <table class="table">
+  <thead>
+    <tr>
+      <th scope="col">No. de servicio</th>
+      <th scope="col">Vencimiento</th>
+      <th scope="col">Monto</th>
+    </tr>
+  </thead>
+  <tbody>
+    @foreach($services as $service)
+      @if($service->unpaid_readings->isNotEmpty())
+        @foreach($service->unpaid_readings as $reading)
+          <tr>
+            <th scope="row">{{ Illuminate\Support\Str::padLeft($service->id, 5, 0) }}</th>
+            <td>
+              {{ $reading->period }}
+              <span class="badge bg-warning text-dark">Pendiente</span>
+            </td>
+            <td>
+              @money($reading->total)
+              <input
+                type="checkbox"
+                class="service-checkbox"
+                data-total="{{ $reading->total }}"
+                value="{{ $service->id }}_{{ $reading->id }}"
+                name="readings[]"
+              >
+            </td>
+          </tr>
+        @endforeach
+      @else
+        <tr>
+          <th scope="row">{{ Illuminate\Support\Str::padLeft($service->id, 5, 0) }}</th>
+          <td colspan="2">Sin deuda pendiente</td>
+        </tr>
+      @endif
+    @endforeach
+  </tbody>
+</table>
+
                   </div>
           </div>
           <div class="col-lg-12">
@@ -64,7 +86,7 @@
                 </div>
               </div>
           </div>
-          
+
           <div class="col-6">
               <div class="d-grid gap-2">
                 <a href="{{ route('accounts.rutificador') }}" class="btn btn-outline-secondary btn-lg">Volver</a>
@@ -91,16 +113,16 @@
           document.querySelectorAll('.service-checkbox:checked').forEach(function(checkedBox) {
             totalAmount += parseFloat(checkedBox.getAttribute('data-total'));
           });
-          
+
           // Mostrar el total
           document.getElementById('totalAmount').textContent = totalAmount.toLocaleString('es-CL', { style: 'currency', currency: 'CLP' });
 
-          
+
           // Activar o desactivar el botón de pagar
           document.getElementById('payButton').disabled = totalAmount === 0;
         });
       });
-     
-      
+
+
     </script>
 @endsection
