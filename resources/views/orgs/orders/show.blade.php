@@ -34,15 +34,15 @@
                                         <div>
                                             <h6 class="mb-1 fw-semibold">{!! $item->description !!}</h6>
                                             <p class="text-muted mb-0 small">
-                                    
+
                                             @money($item->price) x {{ $item->qty }}
-                                               
+
                                             </p>
                                         </div>
                                         <span class="fw-semibold">
-                                            
+
                                             @money($item->total, 'CLP')
-                                            
+
                                         </span>
                                     </li>
                                 @endforeach
@@ -57,7 +57,8 @@
 
                                 <li class="list-group-item px-0 d-flex justify-content-between py-3 border-top">
                                     <h5 class="fw-bold mb-0">Total</h5>
-                                    <h5 class="fw-bold mb-0 text-primary">@money($items->sum('total'))</h5>
+                                    <h5 class="fw-bold mb-0 text-primary">@money($order->total)</h5>
+
                                 </li>
                             </ul>
 
@@ -77,7 +78,7 @@
                                 <div class="text-muted">Método de pago no válido</div>
                             @endif
 
-                            
+
                         </div>
                     </div>
                 </div>
@@ -113,7 +114,7 @@
                                         <input type="email" class="form-control bg-light" id="email" value="{{ $order->email }}" disabled readonly>
                                     </div>
                                 </div>
-                                
+
                                 <div class="col-12 mt-4">
                                     <div class="alert alert-info d-flex align-items-center" role="alert">
                                         <i class="bi bi-info-circle-fill me-2 fs-5"></i>
