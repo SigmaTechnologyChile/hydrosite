@@ -51,12 +51,13 @@ class DteController extends Controller
 
         $response = ['status' => 'success', 'message' => 'Voucher generado correctamente'];
         $memberIds = $orderItems->pluck('member_id')->unique();
-        $services = Service::whereIn('member_id', $memberIds)->get()->keyBy('member_id');
+        $readings = Reading::whereIn('member_id', $memberIds)->get()->keyBy('member_id');
+      //  $services = Service::whereIn('member_id', $memberIds)->get()->keyBy('member_id');
 
         // Pasar los datos a la vista
         return view('orgs.vouchers.show', compact(
             'order', 'orderItems', 'paymentMethod', 'totalAmount','subtotal',
-            'commission', 'iva', 'storeName', 'storeAddress','response', 'org','services' ));// ¡Esto es lo que faltaba!
+            'commission', 'iva', 'storeName', 'storeAddress','response', 'org','readings' ));// ¡Esto es lo que faltaba!
     }
 
 	public function dte_create($org_id, $reading_id)

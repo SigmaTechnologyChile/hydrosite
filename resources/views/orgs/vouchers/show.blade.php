@@ -33,11 +33,11 @@
                         </div>
                         <div class="col-6">
                             @php
-                                $service = $services[$item->member_id] ?? null;
+                                $reading = $readings[$item->member_id] ?? null;
                             @endphp
                             <p><strong>Descuento:</strong>
-                                @if($service && $service->meter_plan > 0 && $service->percentage > 0)
-                                    <span class="text-success">${{ number_format($service->percentage, 0, ',', '.') }}</span>
+                                @if($reading && $reading->v_subs > 0)
+                                    <span class="text-success">${{ number_format($reading->v_subs, 0, ',', '.') }}</span>
                                 @else
                                     <span class="text-muted">No aplica</span>
                                 @endif
