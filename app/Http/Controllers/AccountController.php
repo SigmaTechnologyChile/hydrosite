@@ -65,27 +65,20 @@ class AccountController extends Controller
   protected function debt($rut)
 {
     if(Member::where('rut', $rut)->exists()) {
-        $services = Service::where('rut', $rut)->get();
 
-        foreach ($services as $service) {
+        $members = Member::where('rut',$rut)->first();
+
+
             // Obtiene todas las lecturas impagas del servicio
-            $unpaidReadings = Reading::where('service_id', $service->id)
+            $readings = Reading::where('member_id', $members->id)
                                      ->where('payment_status', 0)
+                                     ->where('total', '>', 0)
                                      ->orderBy('period', 'DESC')
                                      ->get();
 
-            // Asigna la colección al servicio como propiedad dinámica
-            $service->unpaid_readings = $unpaidReadings;
 
-            // Define el estado general del servicio
-            if ($unpaidReadings->isNotEmpty()) {
-                $service->payment_status = 'Pendiente';
-            } else {
-                $service->payment_status = 'Sin deuda pendiente';
-            }
-        }
 
-        return view('accounts.debts', compact('rut', 'services'));
+        return view('accounts.debts', compact('rut', 'readings'));
     } else {
         abort(403, 'Rut No encontrado en el sistema, intente con otro o puede comunicarse con soporte@hydrosite.cl');
     }

@@ -40,11 +40,12 @@
     </tr>
   </thead>
   <tbody>
-    @foreach($services as $service)
-      @if($service->unpaid_readings->isNotEmpty())
-        @foreach($service->unpaid_readings as $reading)
+      @if($readings->isNotEmpty())
+    @foreach($readings as $reading)
+
+
           <tr>
-            <th scope="row">{{ Illuminate\Support\Str::padLeft($service->id, 5, 0) }}</th>
+            <th scope="row">{{ Illuminate\Support\Str::padLeft($reading->service_id , 5, 0) }}</th>
             <td>
               {{ $reading->period }}
               <span class="badge bg-warning text-dark">Pendiente</span>
@@ -55,19 +56,19 @@
                 type="checkbox"
                 class="service-checkbox"
                 data-total="{{ $reading->total }}"
-                value="{{ $service->id }}_{{ $reading->id }}"
+                value="{{ $reading->service_id }}_{{ $reading->id }}"
                 name="readings[]"
               >
             </td>
           </tr>
-        @endforeach
+  @endforeach
       @else
         <tr>
-          <th scope="row">{{ Illuminate\Support\Str::padLeft($service->id, 5, 0) }}</th>
+          <th scope="row">{{ Illuminate\Support\Str::padLeft($reading->service_id, 5, 0) }}</th>
           <td colspan="2">Sin deuda pendiente</td>
         </tr>
       @endif
-    @endforeach
+
   </tbody>
 </table>
 
