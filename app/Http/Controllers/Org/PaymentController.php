@@ -49,8 +49,8 @@ class PaymentController extends Controller
         }
 
         // Filtrar los miembros y servicios usando la búsqueda
-            $members = Service::join('members', 'members.rut', '=', 'services.rut')
-                ->leftjoin('readings', 'members.id', '=', 'readings.member_id')
+            $members = Reading::join('services', 'readings.service_id', 'services.id')
+            ->join('members', 'services.member_id', 'members.id')
                 ->where('services.org_id', $org->id)
                 ->where('readings.payment_status', 0)
                 ->when($year, function($q) use ($year) {
@@ -195,6 +195,7 @@ class PaymentController extends Controller
 
     public function showServices($orgId, $rut)
     {
+       // dd($rut);
         // Obtener la organización usando Query Builder
         $org = $this->org;
 
@@ -217,7 +218,8 @@ class PaymentController extends Controller
         $latestReadings = DB::table('readings')->select('service_id', DB::raw('MAX(id) as latest_id'))->groupBy('service_id');
 
         // Join entre services, members y última lectura
-        $services = Service::where('services.org_id', $orgId)->where('services.rut', $rut)->paginate(20);
+        $services = Service::where('services.org_id', $orgId)
+        ->where('services.rut', $rut)->paginate(20);
 
         foreach ($services as $service) {
             // Verificar si la relación 'payments' está cargada y tiene datos
@@ -225,7 +227,9 @@ class PaymentController extends Controller
             //$service->total_amount = $totalAmount > 0 ? $totalAmount : 0; // Asignar el total calculado (si es 0, usar 0)
 
             // Estado de pago: Si el total de pagos es mayor que 0, marcar como 'Pagado', sino 'Pendiente'
-        $service->total_amount = Reading::where('service_id',$service->id)->where('payment_status',0)->sum('total');
+        $service->total_amount = Reading::where('service_id',$service->id)
+        ->where('payment_status',0)
+        ->sum('total');
         $service->payment_status = $service->total_amount > 0 ? 'Pagado' : 'Pendiente';
         }
 
