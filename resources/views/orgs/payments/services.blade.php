@@ -27,7 +27,6 @@
                 <thead class="table-light">
                   <tr>
                     <th scope="col">N° Servicio</th>
-                     <th scope="col">Id Servicio</th>
                     <th scope="col">Nombre del Sector</th>
                     <th scope="col">Estado</th>
                     <th scope="col">Total ($)</th>
@@ -38,7 +37,6 @@
                   @foreach($services as $service)
                   <tr>
                     <td><span class="badge bg-info" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-original-title="ID unico interno # {{ $service->id }}">{{ Illuminate\Support\Str::padLeft($service->nro,5,0) }}</span></td>
-                     <td><span >{{  $service->id}}</span></td>
 
                     <td>{{ ucwords(str_replace('_', ' ', strtolower($service->sector))) }}</td>
 
