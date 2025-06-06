@@ -272,6 +272,12 @@ if ($year && $month) {
     $tier = TierConfig::where('org_id', $id)->OrderBy('id', 'ASC')->get();
     $configCost = FixedCostConfig::where('org_id', $org->id)->first();
 
+    $readingAnterior = Reading::where('member_id', $reading->member_id)
+    ->where('service_id', $reading->service_id)
+    ->where('period', '<', $reading->period)
+    ->orderBy('period', 'desc')
+    ->first();
+
     if ($tier->isEmpty()) {
         \Log::error("No se encontraron secciones para la organización con ID: {$id}");
         abort(404, 'No se encontraron secciones.');
@@ -385,11 +391,11 @@ if ($year && $month) {
     switch (strtolower($docType)) {
         case 'boleta':
             \Log::info('Entrando a la vista de Boleta');
-            return view('orgs.boleta', compact('reading', 'org', 'detalle_sections', 'tier', 'configCost', 'subtotal_consumo', 'total_con_iva', 'consumo_agua_potable', 'subsidio_descuento'));
+            return view('orgs.boleta', compact('reading', 'org', 'detalle_sections', 'tier', 'configCost', 'subtotal_consumo', 'total_con_iva', 'consumo_agua_potable', 'subsidio_descuento','readingAnterior'));
 
         case 'factura':
             \Log::info('Entrando a la vista de Factura');
-            return view('orgs.factura', compact('reading', 'org', 'detalle_sections', 'tier', 'configCost', 'subtotal_consumo', 'subtotal_con_cargos', 'iva', 'total_con_iva', 'consumo_agua_potable', 'subsidio_descuento'));
+            return view('orgs.factura', compact('reading', 'org', 'detalle_sections', 'tier', 'configCost', 'subtotal_consumo', 'subtotal_con_cargos', 'iva', 'total_con_iva', 'consumo_agua_potable', 'subsidio_descuento','readingAnterior'));
 
         default:
             abort(404, 'Tipo de documento no reconocido: ' . $docType);
