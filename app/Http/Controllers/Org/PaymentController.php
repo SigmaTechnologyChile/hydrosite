@@ -49,9 +49,8 @@ class PaymentController extends Controller
         }
 
         // Filtrar los miembros y servicios usando la búsqueda
-            $members = Member::join('services', 'members.rut', '=', 'services.rut')
-                ->leftjoin('readings', 'services.id', '=', 'readings.service_id')
-                ->where('services.org_id', $org->id)
+            $members = Service::join('members', 'members.rut', '=', 'services.rut')
+                ->leftjoin('readings', 'members.id', '=', 'readings.member_id')
                 ->where('services.org_id', $org->id)
                 ->where('readings.payment_status', 0)
                 ->when($year, function($q) use ($year) {
