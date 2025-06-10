@@ -36,22 +36,22 @@
                 <tbody>
                   @foreach($services as $service)
                   <tr>
-                    <td><span class="badge bg-info" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-original-title="ID unico interno # {{ $service->id }}">{{ Illuminate\Support\Str::padLeft($service->nro,5,0) }}</span></td>
+                    <!-- falta corregir que en la consulta tambien traiga el nro del service, por que no viene -->
+                    <td><span class="badge bg-info" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-original-title="ID unico interno # {{ $service->service_id }}">{{ $service->nro }}</span></td>
 
                     <td>{{ ucwords(str_replace('_', ' ', strtolower($service->sector))) }}</td>
 
                     <td>
-                        @if($service->total_amount)
+                        @if($service->total_sum > 0)
                             <span class="badge bg-warning ">Pendiente de pago</span>
                         @else
                             <span class="badge bg-success">Sin deudas</span>
                         @endif
                     </td>
-                    <td class="text-end">@money($service->total_amount)</td>
+                    <td class="text-end">@money($service->total_sum)</td>
                     <td>
-                        @if($service->total_amount)
-                        <input type="checkbox" class="service-checkbox" data-total="{{ $service->total_amount }}" value="{{ $service->id }}" name="services[]">
-                        @endif
+                        <input type="checkbox" class="service-checkbox" data-total="{{ $service->total_sum }}" value="{{ $service->service_id }}" name="services[]">
+
                     </td>
                   </tr>
                   @endforeach
@@ -62,6 +62,7 @@
             <div class="mt-3">
               <strong>Total Seleccionado: </strong>
               <span id="totalAmount">$0</span>
+              <span id="selecteId"></span>
             </div>
 
             <!-- Bloque de forma de pago deshabilitado inicialmente -->
@@ -94,7 +95,10 @@
       </div>
     </div>
 
-    <script>
+
+@endsection
+@section('js')
+ <script>
       // Función para actualizar el total cuando se seleccionan o deseleccionan los servicios
       document.querySelectorAll('.service-checkbox').forEach(function(checkbox) {
         checkbox.addEventListener('change', function() {
@@ -105,18 +109,27 @@
 
           // Mostrar el total
           document.getElementById('totalAmount').textContent = totalAmount.toLocaleString('es-CL', { style: 'currency', currency: 'CLP' });
-
+          console.log("total a enviar",  document.getElementById('totalAmount').textContent)
+            console.log("data a enviar",  this)
           // Habilitar o deshabilitar la forma de pago
           if (totalAmount > 0) {
             document.getElementById('paymentMethods').style.display = 'block';
           } else {
             document.getElementById('paymentMethods').style.display = 'none';
           }
-
+// document.getElementById('selecteId').textContent=document.getElementsByClassName('services[]').value?0
           // Activar o desactivar el botón de pagar
+
           document.getElementById('payButton').disabled = totalAmount === 0;
         });
       });
+      document.querySelector('form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const formData = new FormData(this);
+    console.log('Datos a enviar:', Array.from(formData.entries()));
+    this.submit(); // Quita esta línea después de verificar
+});
     </script>
+
 @endsection
 

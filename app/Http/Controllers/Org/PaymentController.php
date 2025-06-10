@@ -16,6 +16,7 @@ use App\Models\PaymentMethod;
 use App\Exports\PaymentsExport;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\PaymentsHistoryExport;
+use Illuminate\Support\Facades\Log;
 
 
 class PaymentController extends Controller
@@ -48,9 +49,11 @@ class PaymentController extends Controller
             return redirect()->route('orgs.index')->with('error', 'Organización no encontrada.');
         }
 
+
         // Filtrar los miembros y servicios usando la búsqueda
-            $members = Reading::join('services', 'readings.service_id', 'services.id')
-            ->join('members', 'services.member_id', 'members.id')
+            $members = Reading::join('members', 'readings.member_id', 'members.id')
+             ->join('services', 'services.id', 'readings.service_id')
+          //  ->join('services', 'services.member_id', 'readings.member_id')
                 ->where('services.org_id', $org->id)
                 ->where('readings.payment_status', 0)
                 ->when($year, function($q) use ($year) {
@@ -71,21 +74,24 @@ class PaymentController extends Controller
                           ->orWhere('members.address', 'like', "%{$search}%");
                     });
                 })
-                ->select(    'members.id',
-                'members.rut',
-                'members.first_name',
-                'members.last_name',
-                'members.address',
-                'members.phone',
-                'members.email', DB::raw('count(services.id) as qrx_serv'), DB::raw('count(readings.id) as qrx_readings'), DB::raw('sum(readings.total) as total_amount'))
-                ->groupBy(
-                    'members.id',
-                    'members.rut',
-                    'members.first_name',
-                    'members.last_name',
-                    'members.address',
-                    'members.phone',
-                    'members.email'
+                ->select(
+               'members.id',
+        'members.rut',
+        'members.first_name',
+        'members.last_name',
+        'members.address',
+        'members.phone',
+        'members.email',
+        DB::raw('COUNT(readings.id) as qrx_serv'), // ✅ Usar DISTINCT
+
+        DB::raw('COUNT(DISTINCT readings.id) as qrx_readings'),
+        DB::raw('SUM(readings.total) as total_amount') )     ->groupBy('members.id',
+        'members.rut',
+        'members.first_name',
+        'members.last_name',
+        'members.address',
+        'members.phone',
+        'members.email'
                 )
                 ->paginate(20);
 
@@ -217,22 +223,25 @@ class PaymentController extends Controller
         // Subconsulta para obtener la última lectura por servicio
         $latestReadings = DB::table('readings')->select('service_id', DB::raw('MAX(id) as latest_id'))->groupBy('service_id');
 
-        // Join entre services, members y última lectura
-        $services = Service::where('services.org_id', $orgId)
-        ->where('services.rut', $rut)->paginate(20);
 
-        foreach ($services as $service) {
-            // Verificar si la relación 'payments' está cargada y tiene datos
-            //$totalAmount = $service->payments ? $service->payments->sum('total_amount') : 0;
-            //$service->total_amount = $totalAmount > 0 ? $totalAmount : 0; // Asignar el total calculado (si es 0, usar 0)
+  $members = Member::where('rut',$rut)->first();
 
-            // Estado de pago: Si el total de pagos es mayor que 0, marcar como 'Pagado', sino 'Pendiente'
-        $service->total_amount = Reading::where('service_id',$service->id)
-        ->where('payment_status',0)
-        ->sum('total');
-        $service->payment_status = $service->total_amount > 0 ? 'Pagado' : 'Pendiente';
-        }
 
+
+$services = Reading::join('services','services.id','readings.service_id')
+                    ->where('readings.member_id', $members->id)
+                    ->where('payment_status', 0)
+                    ->where('total', '>', 0)
+                    ->select(
+                        'service_id',
+                        'services.nro',
+                        'services.sector',
+                        DB::raw('SUM(total) as total_sum'),
+                        DB::raw('MAX(payment_status) as payment_status') // asumiendo 0 = pendiente, 1 = pagado
+                    )
+                    ->groupBy('service_id', 'services.sector',  'services.nro')
+                    ->orderBy('service_id', 'DESC')
+                    ->get();
 
         // Pasar la organización, los servicios y el RUT a la vista
         return view('orgs.payments.services', compact('order_code','org', 'member','services', 'rut'));
