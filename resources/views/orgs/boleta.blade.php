@@ -110,7 +110,7 @@
                                 <td class="text-end">
                                     {{ \Carbon\Carbon::parse($readingAnterior->period . '-01')->endOfMonth()->format('d-m-Y') }}
                                 </td>
-                                <td class="text-end">{{ $readingAnterior->current_reading }}</td>
+                                <td class="text-end">{{ $reading->previous_reading }}</td>
                             @else
                                 <td class="text-end">-</td>
                                 <td class="text-end">-</td>
