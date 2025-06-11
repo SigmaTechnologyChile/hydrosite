@@ -16,7 +16,7 @@
 <section class="section dashboard">
     <div class="card top-selling overflow-auto">
         <div class="card-body pt-2">
-                <form method="GET" id="filterForm">
+                <form method="GET" id="filterForm" action="{{ route('orgs.readings.histories', $org->id) }}">
                     <div class="row g-3 align-items-end">
                         <!-- Rango de Fecha (Desde) -->
                         <div class="col-md-2">
@@ -44,7 +44,7 @@
                                 @endif
                             </select>
                         </div>
-                
+
                         <!-- Buscador -->
                         <div class="col-md-2">
                             <label class="form-label fw-semibold">Buscar por nombre o RUT</label>
@@ -58,7 +58,7 @@
                                 <!-- Los resultados de la búsqueda se insertarán aquí -->
                             </ul>
                         </div>
-                        
+
                         <!-- Botón Filtrar -->
                         <div class="col-md-2 d-flex">
                             <button type="submit" class="btn btn-primary w-100 rounded-pill pulse-btn">
@@ -113,8 +113,8 @@
                             </td>
                         </tr>
                         @endforeach
-                        
-                        
+
+
                         <!-- Modal de Edición de Lectura -->
                         <div class="modal fade" id="editReadingModal" tabindex="-1" aria-labelledby="editReadingModalLabel" aria-hidden="true">
                             <div class="modal-dialog">
@@ -140,8 +140,8 @@
                                 </div>
                             </div>
                         </div>
-                              
-                          
+
+
                     </tbody>
                 </table>
             </div>
@@ -158,23 +158,23 @@
 document.addEventListener('DOMContentLoaded', function() {
 
     $('#editReadingModal').on('show.bs.modal', function (event) {
-        
+
         var button = $(event.relatedTarget);
-        
-        
+
+
         var readingId = button.data('bs-id');
         var currentReading = button.data('bs-current');
-        
-       
+
+
         var modal = $(this);
-        
-        
+
+
         modal.find('#reading_id').val(readingId);
         modal.find('#current_reading').val(currentReading);
-        
-        
-        
-        
+
+
+
+
     });
 });
 
