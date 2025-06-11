@@ -16,7 +16,7 @@
 <section class="section dashboard">
     <div class="card top-selling overflow-auto">
         <div class="card-body pt-2">
-                <form method="GET" id="filterForm" action="{{ route('orgs.readings.histories', $org->id) }}">
+                <form method="GET" id="filterForm" action="{{ route('orgs.readings.history', $org->id) }}">
                     <div class="row g-3 align-items-end">
                         <!-- Rango de Fecha (Desde) -->
                         <div class="col-md-2">
