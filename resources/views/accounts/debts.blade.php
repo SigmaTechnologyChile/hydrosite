@@ -64,8 +64,9 @@
   @endforeach
       @else
         <tr>
-          <th scope="row">{{ Illuminate\Support\Str::padLeft($reading->service_id, 5, 0) }}</th>
-          <td colspan="2">Sin deuda pendiente</td>
+          <th scope="row">-</th>
+          <td colspan="1">Sin deuda pendiente </td>
+          <td>@money(0)  </td>
         </tr>
       @endif
 
