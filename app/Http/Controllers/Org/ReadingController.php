@@ -118,7 +118,8 @@ class ReadingController extends Controller
                     ->orWhere('members.full_name', 'like', '%' . $search . '%');
             })
             ->select('readings.*', 'services.nro', 'members.rut', 'members.full_name', 'services.sector as location_name')
-            ->orderBy('period', 'desc')->paginate(20);
+            ->orderBy('period', 'desc')->paginate(20)
+            ->withQueryString();
 
         $locations = Location::where('org_id', $org->id)->orderby('order_by', 'ASC')->get();
 

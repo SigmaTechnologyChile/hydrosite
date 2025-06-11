@@ -284,7 +284,8 @@ $services = Reading::join('services','services.id','readings.service_id')
             })
             ->select('order_items.*','orders.order_code')
             ->orderby('order_items.id','DESC')
-            ->paginate(20);
+            ->paginate(20)
+                 ->withQueryString();
 
         foreach ($order_items as $item) {
             $item->member = Member::find($item->member_id);

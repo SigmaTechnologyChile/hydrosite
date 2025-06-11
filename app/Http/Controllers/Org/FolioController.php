@@ -42,7 +42,8 @@ class FolioController extends Controller
                                 $q->whereDate('created_at', '<=', $end_date.' 00:00:00');
                             })
                     	    ->OrderBy('id','DESC')
-                    	    ->paginate(20);
+                    	    ->paginate(20)
+                                 ->withQueryString();
 	    return view('orgs.folios.index',compact('org','folios'));
 	}
 
