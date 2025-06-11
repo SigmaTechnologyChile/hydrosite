@@ -52,7 +52,7 @@ class ReadingController extends Controller
             $period = "$year-$month";
         }
         if (! $org) {
-            return redirect()->route('orgs.index')->with('error', 'Organización no encontrada.');
+            return redirect()->back()->with('error', 'Organización no encontrada.');
         }
 
         $readings = Reading::join('services', 'readings.service_id', 'services.id')
@@ -87,7 +87,7 @@ class ReadingController extends Controller
         $org = $this->org;
 
         if (! $org) {
-            return redirect()->route('orgs.index')->with('error', 'Organización no encontrada.');
+            return redirect()->back()->with('error', 'Organización no encontrada.');
         }
 
         $start_date = $request->input('start_date');
@@ -139,9 +139,9 @@ class ReadingController extends Controller
 
             $this->updateReading($org, $reading, $request->only(['current_reading']));
 
-            return redirect()->route('orgs.readings.index', $id)->with('success', 'Lectura actualizada correctamente');
+             return redirect()->back()->with('success', 'Lectura actualizada correctamente');
         } catch (\Exception $e) {
-            return redirect()->route('orgs.readings.index', $id)->with('danger', 'Error al actualizar lectura: ' . $e->getMessage());
+             return redirect()->back()->with('danger', 'Error al actualizar lectura: ' . $e->getMessage());
         }
     }
 
@@ -159,9 +159,9 @@ class ReadingController extends Controller
 
             $this->updateReading($org, $reading, $request->all());
 
-            return redirect()->route('orgs.readings.index', $id)->with('success', 'Actualización de lectura correcta');
+            return redirect()->back()->with('success', 'Actualización de lectura correcta');
         } catch (\Exception $e) {
-            return redirect()->route('orgs.readings.index', $id)->with('danger', 'Error al actualizar la lectura: ' . $e->getMessage());
+            return redirect()->back()->with('danger', 'Error al actualizar la lectura: ' . $e->getMessage());
         }
     }
 
