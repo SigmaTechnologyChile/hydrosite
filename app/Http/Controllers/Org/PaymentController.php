@@ -93,7 +93,8 @@ class PaymentController extends Controller
         'members.phone',
         'members.email'
                 )
-                ->paginate(20);
+                ->paginate(20)
+                  ->withQueryString();
 
         $locations = Location::where('org_id', $org->id)->get();
         return view('orgs.payments.index', compact('org', 'members', 'locations'));
