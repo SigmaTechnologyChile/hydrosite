@@ -75,7 +75,8 @@ class ReadingController extends Controller
             })
             ->select('readings.*', 'services.nro', 'members.rut', 'members.full_name', 'locations.name as location_name')
             ->orderBy('readings.period', 'desc')
-            ->paginate(20);
+            ->paginate(20)
+            ->withQueryString();
         $locations = Location::where('org_id', $org->id)->orderby('order_by', 'ASC')->get();
 
         return view('orgs.readings.index', compact('org', 'readings', 'locations'));
