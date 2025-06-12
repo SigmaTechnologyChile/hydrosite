@@ -578,7 +578,7 @@
                   </li>
                   <li>
                     <a href="{{route('orgs.folios.index',$org->id)}}"@if($active == 'orgs.folios.histories') class="active" @endif>
-                      <i class="bi bi-circle"></i><span>Historial de boletas</span>
+                      <i class="bi bi-circle"></i><span>Historial de folios</span>
                     </a>
                   </li>
                   <li class="nav-sub-heading">Pagos</li>

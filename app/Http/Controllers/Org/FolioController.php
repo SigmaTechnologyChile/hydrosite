@@ -115,6 +115,6 @@ class FolioController extends Controller
 	}
 	public function export()
     {
-        return Excel::download(new HistoryFolioExport, 'Historial de boletas-'.date('Ymdhis').'.xlsx');
+        return Excel::download(new HistoryFolioExport, 'Historial de folios-'.date('Ymdhis').'.xlsx');
     }
 }
