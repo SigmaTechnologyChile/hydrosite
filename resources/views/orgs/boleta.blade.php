@@ -3,7 +3,7 @@
 @section('content')
     <div class="container py-3" style="max-width: 800px;">
         <div class="mb-3 d-print-none">
-            <a href="{{ route('orgs.readings.index', $org->id) }}" class="btn btn-secondary">
+            <a  href="{{ url()->previous() }}" class="btn btn-secondary">
                 <i class="bi bi-arrow-left"></i> Volver a Lecturas
             </a>
         </div>
@@ -94,6 +94,7 @@
 
             <div class="row mb-2">
                 <div class="col-md-6">
+                      <div class="col-md-12 mb-2">
                     <div class="bg-primary text-white p-1 text-center fw-bold">
                         Su detalle de consumo en M3
                     </div>
@@ -122,6 +123,37 @@
                             <td class="text-end">{{ $reading->cm3 }}</td>
                         </tr>
                     </table>
+                    </div>
+                             <div class="col-md-12">
+                    <table class="table table-sm table-bordered mb-0 bg-light">
+                        <thead class="bg-secondary text-white">
+                            <tr>
+                                <th class="text-end">TRAMOS</th>
+                                <th class="text-end">M3</th>
+                                <th class="text-end">$</th>
+                                <th class="text-end">TOTAL</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($tier as $tierConfig)
+                                <tr>
+                                    <td class="text-end">{{ $tierConfig->range_from }} Hasta {{ $tierConfig->range_to }}</td>
+                                    <td class="text-end">{{ $tierConfig->m3 }} X</td>
+                                    <td class="text-end">@money($tierConfig->precio)</td>
+                                    <td class="text-end">@money($tierConfig->total)</td>
+                                </tr>
+                            @endforeach
+
+                            <tr>
+                                <td class="text-end">Facturado</td>
+                                <td class="text-end">{{ $reading->cm3 }}</td>
+                                <td></td>
+                                <td class="text-end">@money($tier->sum('total'))</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+            </div>
                 </div>
 
                 <div class="col-md-6">
@@ -180,39 +212,11 @@
 
                     </table>
                 </div>
+
+
             </div>
 
-            <div class="row mb-3">
-                <div class="col-md-8">
-                    <table class="table table-sm table-bordered mb-0 bg-light">
-                        <thead class="bg-secondary text-white">
-                            <tr>
-                                <th class="text-end">TRAMOS</th>
-                                <th class="text-end">M3</th>
-                                <th class="text-end">$</th>
-                                <th class="text-end">TOTAL</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach($tier as $tierConfig)
-                                <tr>
-                                    <td class="text-end">{{ $tierConfig->range_from }} Hasta {{ $tierConfig->range_to }}</td>
-                                    <td class="text-end">{{ $tierConfig->m3 }} X</td>
-                                    <td class="text-end">@money($tierConfig->precio)</td>
-                                    <td class="text-end">@money($tierConfig->total)</td>
-                                </tr>
-                            @endforeach
 
-                            <tr>
-                                <td class="text-end">Facturado</td>
-                                <td class="text-end">{{ $reading->cm3 }}</td>
-                                <td></td>
-                                <td class="text-end">@money($tier->sum('total'))</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
 
             <div class="row justify-content-end">
                 <div class="col-md-6">
