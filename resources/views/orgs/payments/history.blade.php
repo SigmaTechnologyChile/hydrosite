@@ -92,7 +92,7 @@
                                 <th scope="col">Estado de Pago</th>
                                 <th scope="col">Metodo de Pago</th>
                                 <th scope="col">Periodo</th>
-                                <th scope="col">Fecha</th>
+                                <th scope="col">Fecha de Pago</th>
                                 <th scope="col" class="text-center">Acciones</th>
                             </tr>
                         </thead>
