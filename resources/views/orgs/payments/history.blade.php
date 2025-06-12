@@ -12,24 +12,24 @@
         </ol>
       </nav>
     </div><!-- End Page Title -->
-        
+
     <section class="section dashboard">
         <div class="card top-selling overflow-auto">
 <div class="card-body pt-2">
-                <form method="GET" id="filterForm">
+                <form method="GET" id="filterForm" action="{{ route('orgs.payments.history', $org->id) }}">
                         <div class="row g-3 align-items-end">
                             <!-- Fecha Desde -->
                             <div class="col-md-2">
                                 <label class="form-label fw-semibold">Fecha Desde</label>
                                 <input type="date" name="start_date" class="form-control rounded-3" value="{{ request('start_date', date('Y-m-01')) }}">
                             </div>
-                            
+
                             <!-- Fecha Hasta -->
                             <div class="col-md-2">
                                 <label class="form-label fw-semibold">Fecha Hasta</label>
                                 <input type="date" name="end_date" class="form-control rounded-3" value="{{ request('end_date', date('Y-m-d')) }}">
                             </div>
-        
+
                             <!-- Sectores -->
                             <div class="col-md-2">
                                 <label class="form-label fw-semibold">Sectores</label>
@@ -48,7 +48,7 @@
                                     @endif
                                 </select>
                             </div>
-        
+
                             <!-- Buscador -->
                             <div class="col-md-2">
                                 <label class="form-label fw-semibold">Buscar</label>
@@ -59,7 +59,7 @@
                                     <input type="text" name="search" class="form-control rounded-end-3" placeholder="Buscar por nombre, apellido, sector" value="{{ request('search') }}">
                                 </div>
                             </div>
-        
+
                             <!-- Botón Filtrar -->
                             <div class="col-md-2 d-flex">
                                 <button type="submit" class="btn btn-primary w-100 rounded-pill pulse-btn">
@@ -73,7 +73,7 @@
                             </div>
                         </div>
                     </form>
-            </div> 
+            </div>
             <div class="card-body">
                 <div class="table-responsive">
                     <table class="table table-hover align-middle">
@@ -83,7 +83,7 @@
                                 <th scope="col">Orden</th>
                                 <th scope="col">Rut</th>
                                 <th scope="col">Nombres</th>
-                                <th scope="col">Apellidos</th>  
+                                <th scope="col">Apellidos</th>
                                 <th scope="col">N° Servicio.</th>
                                 <th scope="col">Sector</th>
                                 <th scope="col">Folio</th>
@@ -103,7 +103,7 @@
                                 <td>{{ $item->order_code }}</td>
                                 <td class="text-end"><a href="{{route('orgs.members.edit',[$org->id, $item->member->id])}}">{{ $item->member->rut }}</a></td>
                                 <td>{{ $item->member->first_name }}</td>
-                                <td>{{ $item->member->last_name }}</td>   
+                                <td>{{ $item->member->last_name }}</td>
                                 <td>{{ Illuminate\Support\Str::padLeft($item->service->nro,5,0) }}</td>
                                 <td>{{ $item->location->name?? 'N/A' }}</td>
                                 <td>{{ $item->folio }}</td>
@@ -117,7 +117,7 @@
                                     @else
                                         <span class="badge bg-warning ">Pendiente de pago</span>
                                     @endif
-                                </td>  
+                                </td>
                                 <td>{{ $item->payment_method->title }}</td>
                                 <td>{{ $item->reading->period }}</td>
                                 <td>{{ $item->created_at }}</td>
@@ -159,7 +159,7 @@
                                     <input type="text" class="form-control" id="description" name="description" required>
                                 </div>
                             </div>
-                            <div class="col-md-4">    
+                            <div class="col-md-4">
                                 <div class="mb-3">
                                     <label for="qxt" class="form-label">Cantidad</label>
                                     <input type="number" class="form-control" id="qxt" name="qxt" required>
@@ -177,7 +177,7 @@
                                     <input type="number" class="form-control" id="amount" name="amount" required>
                                 </div>
                             </div>
-                            <div class="col-md-4">                                
+                            <div class="col-md-4">
                                 <div class="mb-3">
                                     <label for="status" class="form-label">Estado</label>
                                     <select class="form-select" id="status" name="status">
@@ -213,7 +213,7 @@
                                 </div>
                             </div>
                         </div>
-                        
+
                         <div class="d-grid gap-2 mt-4">
                             <button type="submit" class="btn btn-primary">Añadir Inventario</button>
                         </div>
