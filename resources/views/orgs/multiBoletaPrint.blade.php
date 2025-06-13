@@ -1,4 +1,21 @@
 
+    <!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Boleta</title>
+      <link href="{{asset('theme/nice/assets/vendor/bootstrap/css/bootstrap.min.css')}}" rel="stylesheet">
+    <link href="{{asset('theme/nice/assets/vendor/bootstrap-icons/bootstrap-icons.css')}}" rel="stylesheet">
+    <link href="{{asset('theme/nice/assets/vendor/boxicons/css/boxicons.min.css')}}" rel="stylesheet">
+    <link href="{{asset('theme/nice/assets/vendor/quill/quill.snow.css')}}" rel="stylesheet">
+    <link href="{{asset('theme/nice/assets/vendor/quill/quill.bubble.css')}}" rel="stylesheet">
+    <link href="{{asset('theme/nice/assets/vendor/remixicon/remixicon.css')}}" rel="stylesheet">
+    <link href="{{asset('theme/nice/assets/vendor/simple-datatables/style.css')}}" rel="stylesheet">
+
+    <!-- Template Main CSS File -->
+    <link href="{{asset('theme/nice/assets/css/style.css')}}" rel="stylesheet"></div>
+</head>
+<body>
     <div class="container py-3" style="max-width: 800px;">
 
         <div class="border p-3 rounded shadow-sm bg-light">
@@ -266,6 +283,8 @@
             </div>
         </div>
     </div>
+    </body>
+    </html>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
 
@@ -302,6 +321,9 @@
                 top: 0;
                 margin: 0;
                 padding: 0;
+                 min-height: 100vh;
+                     overflow-x: hidden;
+    overflow-y: auto;
             }
 
             .d-print-none {

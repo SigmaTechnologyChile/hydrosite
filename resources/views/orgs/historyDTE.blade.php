@@ -85,7 +85,8 @@
                                 </a>
                                 <a
                                     href="{{ route('orgs.printAllDTE', ['id' => $org->id] + request()->only('start_date', 'end_date', 'sector', 'search')) }}"
-                                    class="btn btn-secondary rounded-end-pill pulse-btn w-50 d-flex align-items-center justify-content-center px-1 py-2 text-sm">
+                                    class="btn btn-secondary rounded-end-pill pulse-btn w-50 d-flex align-items-center justify-content-center px-1 py-2 text-sm"
+                                    target="_blank">
                                     <i class="bi bi-printer me-1"></i>
                                     <small>Imprimir</small>
                                 </a>

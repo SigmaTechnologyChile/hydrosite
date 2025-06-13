@@ -143,7 +143,7 @@ Route::post('{id}/tramos/store-fixed-cost', [App\Http\Controllers\Org\SectionCon
     Route::get('{id}/historialDTE', [App\Http\Controllers\Org\DteController::class, 'historyDTE'])->name('historyDTE');
     Route::get('{id}/historialDTE/export', [App\Http\Controllers\Org\DteController::class, 'exportDTE'])->name('exportDTE');
     Route::get('{id}/print-dtes', [App\Http\Controllers\Org\DteController::class, 'printAllDTE'])->name('printAllDTE');
-     Route::get('{id}/lecturas/{reading_id}/dte/boleta', [App\Http\Controllers\Org\ReadingController::class, 'historyPrintDTE'])->name('multiBoletaPrint');
+     Route::get('{id}/historialDTE/{reading_id}/dte', [App\Http\Controllers\Org\ReadingController::class, 'multiBoletaPrint'])->name('multiBoletaPrint');
 
     Route::get('{id}/sectores', [App\Http\Controllers\Org\LocationController::class, 'index'])->name('locations.index');
     Route::get('{id}/sectores/nuevo', [App\Http\Controllers\Org\LocationController::class, 'create'])->name('locations.create');

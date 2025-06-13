@@ -397,7 +397,7 @@ class ReadingController extends Controller
         }
     }
 
-      public function historyPrintDTE($id, $readingId)
+      public function multiBoletaPrint($id, $readingId)
     {
         \Log::info('Recibiendo solicitud para DTE con ID org: ' . $id . ' y readingId: ' . $readingId);
 
@@ -509,6 +509,7 @@ class ReadingController extends Controller
         $total_con_iva = $subtotal_con_cargos;
 
         $routeName = \Route::currentRouteName();
+        \Log::info('ruta encontrada' . $routeName);
         if ($routeName === 'orgs.readings.boleta') {
             $docType = 'boleta';
         } elseif ($routeName === 'orgs.readings.factura') {
@@ -527,11 +528,11 @@ class ReadingController extends Controller
         switch (strtolower($docType)) {
             case 'boleta':
                 \Log::info('Entrando a la vista de Boleta');
-                return view('orgs.boleta', compact('reading', 'org', 'detalle_sections', 'tier', 'configCost', 'subtotal_consumo', 'total_con_iva', 'consumo_agua_potable', 'subsidio_descuento', 'readingAnterior'));
+                return view('orgs.multiBoletaPrint', compact('reading', 'org', 'detalle_sections', 'tier', 'configCost', 'subtotal_consumo', 'total_con_iva', 'consumo_agua_potable', 'subsidio_descuento', 'readingAnterior'));
 
             case 'factura':
                 \Log::info('Entrando a la vista de Factura');
-                return view('orgs.factura', compact('reading', 'org', 'detalle_sections', 'tier', 'configCost', 'subtotal_consumo', 'subtotal_con_cargos', 'iva', 'total_con_iva', 'consumo_agua_potable', 'subsidio_descuento', 'readingAnterior'));
+                return view('orgs.multiBoletaPrint', compact('reading', 'org', 'detalle_sections', 'tier', 'configCost', 'subtotal_consumo', 'subtotal_con_cargos', 'iva', 'total_con_iva', 'consumo_agua_potable', 'subsidio_descuento', 'readingAnterior'));
 
             default:
                 abort(404, 'Tipo de documento no reconocido: ' . $docType);
