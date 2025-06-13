@@ -397,6 +397,147 @@ class ReadingController extends Controller
         }
     }
 
+      public function historyPrintDTE($id, $readingId)
+    {
+        \Log::info('Recibiendo solicitud para DTE con ID org: ' . $id . ' y readingId: ' . $readingId);
+
+        $org              = Org::findOrFail($id);
+        $reading          = Reading::findOrFail($readingId);
+        $reading->member  = Member::findOrFail($reading->member_id);
+        $reading->service = Service::findOrFail($reading->service_id);
+        $tier             = TierConfig::where('org_id', $id)->OrderBy('id', 'ASC')->get();
+        $configCost       = FixedCostConfig::where('org_id', $org->id)->first();
+
+        $readingAnterior = Reading::where('member_id', $reading->member_id)
+            ->where('service_id', $reading->service_id)
+            ->where('period', '<', $reading->period)
+            ->orderBy('period', 'desc')
+            ->first();
+
+        if ($tier->isEmpty()) {
+            \Log::error("No se encontraron secciones para la organización con ID: {$id}");
+            abort(404, 'No se encontraron secciones.');
+        }
+
+        if (! $configCost) {
+            \Log::error("No se encontró configuración de costos fijos para la organización con ID: {$org->id}");
+            abort(404, 'Configuración de costos fijos no encontrada.');
+        }
+
+        // Obtener datos del servicio para el subsidio
+        $service             = Service::findOrFail($reading->service_id);
+        $subsidio            = $service->meter_plan; // 0 o 1
+        $porcentaje_subsidio = $service->percentage / 100;
+
+        // Asegurándonos de que el consumo es mayor que 0
+        $consumo = $reading->cm3;
+        \Log::info("Consumo inicial: " . $consumo);
+
+        $detalle_sections = [];
+        $consumo_restante = $consumo;
+        $anterior         = 0;
+
+        foreach ($tier as $index => $tierConfig) {
+            if ($consumo_restante <= 0) {
+                // Si no queda consumo, este tramo tendrá 0 m3
+                $tierConfig->section            = $tierConfig->range_from . " Hasta " . $tierConfig->range_to;
+                $tierConfig->m3                 = 0;
+                $tierConfig->precio             = $tierConfig->value;
+                $tierConfig->total              = 0;
+                $tierConfig->total_sin_subsidio = 0;
+                $tierConfig->subsidio_aplicado  = 0;
+            } else {
+                $limite_tramo = $tierConfig->range_to;
+
+                // Si es el último tramo, asignar todo el consumo restante
+                $es_ultimo_tramo = ($index == count($tier) - 1);
+
+                if ($es_ultimo_tramo) {
+                    // En el último tramo, asignar todo el consumo restante
+                    $m3_en_este_tramo = $consumo_restante;
+                } else {
+                    // En tramos intermedios, calcular la capacidad del tramo
+                    $capacidad_tramo  = $limite_tramo - $anterior;
+                    $m3_en_este_tramo = min($capacidad_tramo, $consumo_restante);
+                }
+
+                $tierConfig->section = $tierConfig->range_from . " Hasta " . $tierConfig->range_to;
+                $tierConfig->m3      = $m3_en_este_tramo;
+                $tierConfig->precio  = $tierConfig->value;
+
+                // SIEMPRE mostrar el precio completo sin subsidio en la tabla de tramos
+                $tierConfig->total = $m3_en_este_tramo * $tierConfig->value;
+
+                // Reducir el consumo restante
+                $consumo_restante -= $m3_en_este_tramo;
+                $anterior = $limite_tramo;
+
+                \Log::info("Tramo {$tierConfig->range_from}-{$tierConfig->range_to}: {$m3_en_este_tramo} m3, Total sin subsidio: {$tierConfig->total}, Restante: {$consumo_restante}");
+            }
+
+            $detalle_sections[] = $tierConfig;
+        }
+
+        // Calcular el total de todos los tramos (sin subsidio aplicado)
+        $total_tramos_sin_subsidio = array_sum(array_column($detalle_sections, 'total'));
+
+        \Log::info("Total de tramos sin subsidio: {$total_tramos_sin_subsidio}");
+        \Log::info("vc_water de reading (con subsidio aplicado): {$reading->vc_water}");
+        \Log::info("v_subs de reading (subsidio a descontar): {$reading->v_subs}");
+
+        // Valores fijos
+        $cargo_fijo           = $configCost->fixed_charge_penalty;
+        $consumo_agua_potable = $total_tramos_sin_subsidio; // Usar el total de tramos sin subsidio
+        $subsidio_descuento   = $reading->v_subs ?? 0;      // Subsidio ya calculado
+
+        $subtotal_consumo = $consumo_agua_potable + $cargo_fijo - $subsidio_descuento;
+
+        // Verificando el subtotal
+        \Log::info("Consumo agua potable (tramos sin subsidio): " . $consumo_agua_potable);
+        \Log::info("Cargo fijo: " . $cargo_fijo);
+        \Log::info("Subsidio a descontar: " . $subsidio_descuento);
+        \Log::info("Subtotal de consumo (después de restar subsidio): " . $subtotal_consumo);
+
+        $subtotal_con_cargos = $subtotal_consumo +
+            ($reading->multas_vencidas ?? 0) +
+            ($reading->corte_reposicion ?? 0) +
+            ($reading->other ?? 0) +
+            ($reading->s_previous ?? 0);
+
+        // Definir el IVA solo si el tipo de documento es factura
+        $iva           = 0;
+        $total_con_iva = $subtotal_con_cargos;
+
+        $routeName = \Route::currentRouteName();
+        if ($routeName === 'orgs.readings.boleta') {
+            $docType = 'boleta';
+        } elseif ($routeName === 'orgs.readings.factura') {
+            $docType = 'factura';
+            // Calcular IVA solo si es factura (19%)
+            $iva           = $subtotal_con_cargos * 0.19;
+            $total_con_iva = $subtotal_con_cargos + $iva;
+        } else {
+            $docType = 'boleta';
+        }
+
+        \Log::info('Tipo de documento seleccionado: ' . $docType);
+        \Log::info("IVA Calculado: {$iva}");
+        \Log::info("Total con IVA: {$total_con_iva}");
+
+        switch (strtolower($docType)) {
+            case 'boleta':
+                \Log::info('Entrando a la vista de Boleta');
+                return view('orgs.boleta', compact('reading', 'org', 'detalle_sections', 'tier', 'configCost', 'subtotal_consumo', 'total_con_iva', 'consumo_agua_potable', 'subsidio_descuento', 'readingAnterior'));
+
+            case 'factura':
+                \Log::info('Entrando a la vista de Factura');
+                return view('orgs.factura', compact('reading', 'org', 'detalle_sections', 'tier', 'configCost', 'subtotal_consumo', 'subtotal_con_cargos', 'iva', 'total_con_iva', 'consumo_agua_potable', 'subsidio_descuento', 'readingAnterior'));
+
+            default:
+                abort(404, 'Tipo de documento no reconocido: ' . $docType);
+        }
+    }
+
     /*Export Excel*/
     public function export()
     {

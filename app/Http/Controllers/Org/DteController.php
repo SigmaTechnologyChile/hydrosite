@@ -1,18 +1,21 @@
 <?php
-
 namespace App\Http\Controllers\Org;
 
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\SimpleFacturaController;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Http;
-use Carbon\Carbon;
-use App\Models\Org;
+use App\Models\Location;
+use App\Models\Member;
 use App\Models\Order;
 use App\Models\OrderItem;
-use App\Models\Token;
+use App\Models\Org;
+use App\Models\PaymentMethod;
 use App\Models\Reading;
 use App\Models\Service;
+use App\Models\Token;
+use Carbon\Carbon;
+use Illuminate\Http\Request;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\PaymentsHistoryExport;
 
 class DteController extends Controller
 {
@@ -22,8 +25,71 @@ class DteController extends Controller
     public function __construct()
     {
         $this->middleware('auth');
-        $id = \Route::current()->Parameter('id');
+        $id        = \Route::current()->Parameter('id');
         $this->org = Org::find($id);
+
+    }
+
+    public function historyDTE(Request $request, $id)
+    {
+        //Log::info("llego al history");
+        //   dd('Se ejecutó el controller'.$id);
+        $org = $this->org;
+
+        $start_date = $request->input('start_date');
+        $end_date   = $request->input('end_date');
+        $sector     = $request->input('sector');
+        $search     = $request->input('search');
+
+        $start_month = $start_date ? date('Y-m', strtotime($start_date)) : null;
+        $end_month   = $end_date ? date('Y-m', strtotime($end_date)) : null;
+
+        if (! $org) {
+            return redirect()->route('orgs.index')->with('error', 'Organización no encontrada.');
+        }
+
+        $order_items = OrderItem::join('orders', 'order_items.order_id', 'orders.id')
+            ->join('readings', 'order_items.reading_id', 'readings.id')
+            ->join('members', 'order_items.member_id', 'members.id')
+            ->join('services', 'order_items.service_id', 'services.id')
+            ->where('readings.org_id', $id)
+            ->when($start_month && $end_month, function ($q) use ($start_month, $end_month) {
+                $q->where('readings.period', '>=', $start_month)
+                    ->where('readings.period', '<=', $end_month);
+            })
+            ->when($sector, function ($q) use ($sector) {
+                $q->where('services.locality_id', $sector);
+            })
+            ->when($search, function ($query) use ($search) {
+                $query->where(function ($q) use ($search) {
+                    // Especificamos de qué tabla debe venir cada columna
+                    $q->where('members.first_name', 'like', "%{$search}%")
+                        ->orWhere('members.last_name', 'like', "%{$search}%")
+                        ->orWhere('members.rut', 'like', "%{$search}%")
+                        ->orWhere('members.address', 'like', "%{$search}%");
+                });
+            })
+            ->select('order_items.*', 'orders.order_code',  'services.locality_id')
+            ->orderby('order_items.id', 'DESC')
+            ->paginate(20)
+            ->withQueryString();
+
+        foreach ($order_items as $item) {
+            $item->member         = Member::find($item->member_id);
+            $item->service        = Service::find($item->service_id);
+            $item->reading        = Reading::find($item->reading_id);
+            $item->location       = Location::find($item->locality_id);
+            $item->payment_method = PaymentMethod::find($item->payment_method_id);
+        }
+        $locations = Location::where('org_id', $org->id)->get();
+
+        return view('orgs.historyDTE', compact('org', 'order_items', 'locations'));
+    }
+    public function exportDTE(Request $request, $id)
+    {
+        //dd('Se ejecutó el controller export' . $id);
+           return Excel::download(new PaymentsHistoryExport, 'dte-History-' . date('Ymdhis') . '.xlsx');
+      //  return view('orgs.historyDTE');
     }
 
     // Método para mostrar el voucher
@@ -38,99 +104,142 @@ class DteController extends Controller
         $orderItems = OrderItem::where('order_id', $order->id)->get();
 
         // Datos del lugar (por ejemplo, dirección de la tienda)
-        $storeName = "Tienda Ejemplo";
+        $storeName    = "Tienda Ejemplo";
         $storeAddress = "Dirección 123, Ciudad, País";
 
         // Datos del pago
         $paymentMethod = $order->payment_method ?? 'Efectivo';
-        $totalAmount = $order->total;
-        $subtotal = $order->sub_total;
-        $commission = $order->commission;
-        $iva = $order->iva;
+        $totalAmount   = $order->total;
+        $subtotal      = $order->sub_total;
+        $commission    = $order->commission;
+        $iva           = $order->iva;
 
-
-        $response = ['status' => 'success', 'message' => 'Voucher generado correctamente'];
+        $response  = ['status' => 'success', 'message' => 'Voucher generado correctamente'];
         $memberIds = $orderItems->pluck('member_id')->unique();
-        $readings = Reading::whereIn('member_id', $memberIds)->get()->keyBy('member_id');
-      //  $services = Service::whereIn('member_id', $memberIds)->get()->keyBy('member_id');
+        $readings  = Reading::whereIn('member_id', $memberIds)->get()->keyBy('member_id');
+        //  $services = Service::whereIn('member_id', $memberIds)->get()->keyBy('member_id');
 
         // Pasar los datos a la vista
         return view('orgs.vouchers.show', compact(
-            'order', 'orderItems', 'paymentMethod', 'totalAmount','subtotal',
-            'commission', 'iva', 'storeName', 'storeAddress','response', 'org','readings' ));// ¡Esto es lo que faltaba!
+            'order', 'orderItems', 'paymentMethod', 'totalAmount', 'subtotal',
+            'commission', 'iva', 'storeName', 'storeAddress', 'response', 'org', 'readings')); // ¡Esto es lo que faltaba!
     }
 
-	public function dte_create($org_id, $reading_id)
-	{
-	    try {
-    	    $reading = Reading::find($reading_id);
+    public function dte_create($org_id, $reading_id)
+    {
+        try {
+            $reading = Reading::find($reading_id);
 
-            if($reading->total > 0 AND $reading->folio > 0){
+            if ($reading && $reading->total > 0 && $reading->folio > 0) {
                 $token = (new SimpleFacturaController)->token($org_id);
 
-                if($reading->invoice_type =='boleta'){
+                if ($reading->invoice_type == 'boleta') {
                     $data = $this->boleta($reading);
-                }elseif($reading->invoice_type =='factura'){
+                } elseif ($reading->invoice_type == 'factura') {
                     $data = $this->factura($reading);
                 }
-                $endpoint="invoiceV2/Casa_Matriz";
-                $method="POST";
-                $response = (new SimpleFacturaController)->get_ws($data,$token,$method,"sandbox",$endpoint);
+                $endpoint = "invoiceV2/Casa_Matriz";
+                $method   = "POST";
+                $response = (new SimpleFacturaController)->get_ws($data, $token, $method, "sandbox", $endpoint);
                 //dd($response);
-                if($response->data){
+                if ($response->data) {
                     $reading->invoice_dte_type = $response->data->tipoDTE;
-                    $reading->invoice_date = Carbon::parse($response->data->fechaEmision)->format('Y-m-d');
-                    $reading->folio = $response->data->folio;
+                    $reading->invoice_date     = Carbon::parse($response->data->fechaEmision)->format('Y-m-d');
+                    $reading->folio            = $response->data->folio;
                 }
                 $reading->invoice_message = $response->message;
                 $reading->save();
-                return response()->json(['message'=>$reading]);
-            }else{
-                return redirect()->route('orders-summary',$order->order_code);
+                return response()->json(['message' => $reading]);
+            } else {
+                //  return response()->json(['message'=>$reading->id?$reading->id:"lectura no encontrada"]);
             }
         } catch (\Exception $e) {
-            return response()->json(['message'=>'payment not found!'.$e], 404);
+            return response()->json(['message' => 'payment not found!' . $e], 404);
         }
-	}
+    }
 
-	public function dte_bell($org_id, $reading_id)
-	{
-	    try {
-    	    $reading = Reading::find($reading_id);
+    public function printAllDTE(Request $request, $id)
+{
+    $org = $this->org;
 
-            if($reading->total > 0 AND $reading->folio > 0){
-                $token = (new SimpleFacturaController)->token($org_id);
-                $codeTypeDte = ($reading->invoice_type=='factura'? 33 : 41);
-                $data = '{
+    $start_date = $request->input('start_date');
+    $end_date   = $request->input('end_date');
+    $sector     = $request->input('sector');
+    $search     = $request->input('search');
+
+    $start_month = $start_date ? date('Y-m', strtotime($start_date)) : null;
+    $end_month   = $end_date ? date('Y-m', strtotime($end_date)) : null;
+
+    if (! $org) {
+        return redirect()->route('orgs.index')->with('error', 'Organización no encontrada.');
+    }
+
+    $order_items = OrderItem::join('orders', 'order_items.order_id', 'orders.id')
+        ->join('readings', 'order_items.reading_id', 'readings.id')
+        ->join('services', 'order_items.service_id', 'services.id')
+        ->join('members', 'services.member_id', '=', 'members.id')
+        ->where('readings.org_id', $id)
+        ->when($start_month && $end_month, function ($q) use ($start_month, $end_month) {
+            $q->where('readings.period', '>=', $start_month)
+                ->where('readings.period', '<=', $end_month);
+        })
+        ->when($sector, function ($q) use ($sector) {
+            $q->where('services.locality_id', $sector);
+        })
+        ->when($search, function ($query) use ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('members.first_name', 'like', "%{$search}%")
+                    ->orWhere('members.last_name', 'like', "%{$search}%")
+                    ->orWhere('members.rut', 'like', "%{$search}%")
+                    ->orWhere('members.address', 'like', "%{$search}%");
+            });
+        })
+        ->select('order_items.*')
+        ->orderBy('order_items.id', 'DESC')
+        ->get();
+
+    return view('orgs.print-all-dtes', compact('org', 'order_items'));
+}
+
+
+    public function dte_bell($org_id, $reading_id)
+    {
+        try {
+            $reading = Reading::find($reading_id);
+
+            if ($reading->total > 0 and $reading->folio > 0) {
+                $token       = (new SimpleFacturaController)->token($org_id);
+                $codeTypeDte = ($reading->invoice_type == 'factura' ? 33 : 41);
+                $data        = '{
                     "credenciales": {
                         "rutEmisor": "76269769-6"
                     },
                     "dteReferenciadoExterno": {
-                        "folio": '.$reading->folio.',
-                        "codigoTipoDte": '.$codeTypeDte.',
+                        "folio": ' . $reading->folio . ',
+                        "codigoTipoDte": ' . $codeTypeDte . ',
                         "ambiente": 0
                     }
                 }';
-                $endpoint="dte/timbre";
-                $method="POST";
-                $response = (new SimpleFacturaController)->get_ws($data,$token,$method,"sandbox",$endpoint);
+                $endpoint = "dte/timbre";
+                $method   = "POST";
+                $response = (new SimpleFacturaController)->get_ws($data, $token, $method, "sandbox", $endpoint);
                 //dd($response);
-                if($response->data){
-                    $reading->invoice_bell = $response->data;
+                if ($response->data) {
+                    $reading->invoice_bell    = $response->data;
                     $reading->invoice_message = $response->message;
                     $reading->save();
                 }
-                return response()->json(['message'=>$reading]);
-            }else{
+                return response()->json(['message' => $reading]);
+            } else {
                 //return redirect()->route('orders-summary',$order->order_code);
             }
         } catch (\Exception $e) {
-            return response()->json(['message'=>'payment not found!'.$e], 404);
+            return response()->json(['message' => 'payment not found!' . $e], 404);
         }
-	}
+    }
 
-	private function boleta($reading)
-	{
+    private function boleta($reading)
+    {
         return '{
                 "Documento": {
                         "Encabezado": {
@@ -170,10 +279,10 @@ class DteController extends Controller
                         }]
                     }
                 }';
-	}
+    }
 
-	private function factura($reading)
-	{
+    private function factura($reading)
+    {
         return '{
                 "Documento": {
                     "Encabezado": {
@@ -257,6 +366,6 @@ class DteController extends Controller
                 "Observaciones": "NOTA AL PIE DE PAGINA",
                 "TipoPago": "30 dias"
             }';
-	}
-}
+    }
 
+}

@@ -558,7 +558,7 @@
             </li>
             @endif
 
-            @if($active == 'orgs.sections.index' OR $active == 'orgs.sections.create' OR $active == 'orgs.folios.index' OR $active == 'orgs.folios.create' OR $active == 'orgs.payments.index' OR $active == 'orgs.folios.histories' OR $active == 'orgs.payments.histories')
+            @if($active == 'orgs.sections.index' OR $active == 'orgs.sections.create' OR $active == 'orgs.folios.index' OR $active == 'orgs.folios.create' OR $active == 'orgs.payments.index' OR $active == 'orgs.folios.histories' OR $active == 'orgs.payments.histories' OR $active == 'orgs.historyDTE')
             <li class="nav-item">
                 <a class="nav-link" data-bs-target="#invoces-nav" data-bs-toggle="collapse" href="#">
                   <i class="ri-bill-line"></i><span>Facturación</span><i class="bi bi-chevron-down ms-auto"></i>
@@ -579,6 +579,11 @@
                   <li>
                     <a href="{{route('orgs.folios.index',$org->id)}}"@if($active == 'orgs.folios.histories') class="active" @endif>
                       <i class="bi bi-circle"></i><span>Historial de folios</span>
+                    </a>
+                  </li>
+                    <li>
+                    <a href="{{route('orgs.historyDTE',$org->id)}}"@if($active == 'orgs.historyDTE') class="active" @endif>
+                      <i class="bi bi-circle"></i><span>Historial de DTE</span>
                     </a>
                   </li>
                   <li class="nav-sub-heading">Pagos</li>
@@ -615,6 +620,11 @@
                   <li>
                     <a href="{{route('orgs.folios.index',$org->id)}}">
                       <i class="bi bi-circle"></i><span>Historial de folios</span>
+                    </a>
+                  </li>
+                  <li>
+                      <a href="{{route('orgs.historyDTE',$org->id)}}">
+                      <i class="bi bi-circle"></i><span>Historial de DTE</span>
                     </a>
                   </li>
                   <li class="nav-sub-heading">Pagos</li>
