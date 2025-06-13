@@ -4,7 +4,7 @@
     <div class="container py-3" style="max-width: 800px;">
         <div class="mb-3 d-print-none">
             <a  href="{{ url()->previous() }}" class="btn btn-secondary">
-                <i class="bi bi-arrow-left"></i> Volver a Lecturas
+                <i class="bi bi-arrow-left"></i> Volver
             </a>
         </div>
         <div class="border p-3 rounded shadow-sm bg-light">
