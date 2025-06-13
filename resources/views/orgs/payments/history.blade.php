@@ -127,8 +127,7 @@
                                     @else
                                     <a href="{{ route('orgs.readings.factura', [$item->org_id, $item->reading_id]) }}" target="_black" class="btn btn-success btn-sm" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-original-title="Ver Factura"><i class="bi bi-file-earmark"></i></a>
                                     @endif
-                                    <a href="{{ route('orgs.voucher.create', [$item->org_id, $item->order_code]) }}" target="_blank" class="btn btn-secondary btn-sm" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-original-title="Imprimir"><i class="bi bi-printer"></i></a>
-                                    <a href="#" class="btn btn-sm btn-warning btn-sm" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-original-title="Enviar Mail"><i class="ri-mail-send-line"></i></a>
+                                            <a href="#" class="btn btn-sm btn-warning btn-sm" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-original-title="Enviar Mail"><i class="ri-mail-send-line"></i></a>
                                 </td>
                             </tr>
                             @endforeach
