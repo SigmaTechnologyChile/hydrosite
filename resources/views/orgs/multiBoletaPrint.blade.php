@@ -293,52 +293,93 @@
         });
     </script>
 
-    <style>
-        @media print {
-            @page {
-                size: A4;
-                margin: 0.5cm;
-            }
+<style>
+@media print {
+  @page {
+    size: A4 landscape;
+    margin: 0;
+  }
 
-            body {
-                margin: 0;
-                padding: 0;
-            }
+  html, body {
+    margin: 0 !important;
+    padding: 0 !important;
+     height: auto !important;
+  max-height: 100% !important;
+    font-size: 10px !important;
+    line-height: 1.2 !important;
+    overflow: hidden !important;
+  }
 
-            body * {
-                visibility: hidden;
-            }
+  * {
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
 
-            .container,
-            .container * {
-                visibility: visible;
-            }
+  .container, .container-fluid, .section.dashboard, .card, .card-body, .row, .col-md-2 {
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    page-break-before: avoid !important;
+    page-break-inside: avoid !important;
+    page-break-after: avoid !important;
+  }
 
-            .container {
-                width: 100%;
-                position: absolute;
-                left: 0;
-                top: 0;
-                margin: 0;
-                padding: 0;
-                 min-height: 100vh;
-                     overflow-x: hidden;
-    overflow-y: auto;
-            }
+  .table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+    font-size: 9px !important;
+    table-layout: fixed !important;
+  }
 
-            .d-print-none {
-                display: none !important;
-            }
+  .table th, .table td {
+    border: 1px solid #ccc !important;
+    padding: 3px !important;
+    font-size: 8.5px !important;
+    overflow: hidden !important;
+    white-space: nowrap !important;
+    text-overflow: ellipsis !important;
+  }
 
-            header,
-            footer,
-            nav,
-            .navbar,
-            .sidebar,
-            .btn,
-            button {
-                display: none !important;
-            }
-        }
-    </style>
+  .form-control, .form-select {
+    height: auto !important;
+    font-size: 8.5px !important;
+    padding: 2px 4px !important;
+  }
+
+  .form-label {
+    font-size: 8px !important;
+    margin: 0 0 2px 0 !important;
+  }
+
+  .btn, .btn-group .btn {
+    font-size: 8px !important;
+    padding: 2px 5px !important;
+    margin: 0 !important;
+  }
+
+  /* Oculta navegación, botones, y modales */
+  .pagetitle nav,
+  .breadcrumb,
+  .card-footer,
+  .btn,
+  .btn-group,
+  .modal,
+  .modal-backdrop,
+  .form-group,
+  .pulse-btn {
+    display: none !important;
+  }
+
+  .pagetitle h1 {
+    font-size: 16px !important;
+    margin: 0px 0 !important;
+  }
+
+  /* Asegura que el contenido se ajuste */
+  .top-selling {
+    overflow: hidden !important;
+  }
+}
+</style>
 
