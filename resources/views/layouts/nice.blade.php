@@ -32,14 +32,21 @@
 
     <!-- Template Main CSS File -->
     <link href="{{asset('theme/nice/assets/css/style.css')}}" rel="stylesheet">
+    <style>
+        @media print {
+            .d-print-none {
+                display: none !important;
+            }
+        }
+    </style>
 
 </head>
 
 <body>
     <!-- ======= Header ======= -->
-    <header id="header" class="header fixed-top d-flex align-items-center">
+    <header id="header" class="header fixed-top d-flex align-items-center d-print-none">
 
-    <div class="d-flex align-items-center justify-content-between">
+    <div class="d-flex align-items-center justify-content-between d-print-none">
       <a href="{{route('account.dashboard')}}" class="logo d-flex align-items-center">
         <img src="{{asset('theme/common/img/hydrosite_favicon.png')}}" alt="">
         <span class="d-none d-lg-block">HydroSite</span>
@@ -49,14 +56,14 @@
 
     </div><!-- End Logo -->
 
-    <div class="search-bar">
+    <div class="search-bar d-print-none">
       <form class="search-form d-flex align-items-center" method="POST" action="#">
         <input type="text" name="query" placeholder="Busqueda general" title="Enter search keyword">
         <button type="submit" title="Search"><i class="bi bi-search"></i></button>
       </form>
     </div><!-- End Search Bar -->
 
-    <nav class="header-nav ms-auto">
+    <nav class="header-nav ms-auto d-print-none">
       <ul class="d-flex align-items-center">
 
         <li class="nav-item d-block d-lg-none">
@@ -263,7 +270,7 @@
 
     <!-- End Header -->
     <!-- ======= Sidebar ======= -->
-        <aside id="sidebar" class="sidebar">
+        <aside id="sidebar" class="sidebar d-print-none">
 
         <ul class="sidebar-nav" id="sidebar-nav">
 
@@ -776,7 +783,7 @@
     </main><!-- End #main -->
 
     <!-- ======= Footer ======= -->
-    <footer id="footer" class="footer">
+    <footer id="footer" class="footer d-print-none">
         <div class="copyright">
           &copy; Copyright <strong><span>HydroSite®</span></strong>. Todos los derechos reservados
         </div>
@@ -790,7 +797,7 @@
     </footer>
     <!-- End Footer -->
 
-    <a href="#" class="back-to-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
+    <a href="#" class="back-to-top d-flex align-items-center justify-content-center d-print-none"><i class="bi bi-arrow-up-short"></i></a>
 
     <!-- Vendor JS Files -->
     <script src="{{asset('theme/common/js/jquery-3.7.1.min.js')}}"></script>
